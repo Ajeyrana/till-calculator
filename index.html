@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Till Calculator</title>
+    <title>Till Calculator Pro</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <style>
         .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -14,22 +14,18 @@
 
     <script>
         // 1. VERSION CONTROL SETUP
-        const CURRENT_VERSION_CODE = 5;             // <-- Bump this number (+1) to trigger the splash screen
-        const CURRENT_VERSION_NAME = "1.0.0";       // <-- Display name shown to users
+        // Bumping EITHER the Code or Name will now trigger the one-time popup instantly!
+        const CURRENT_VERSION_CODE = 4;             
+        const CURRENT_VERSION_NAME = "2.2.0";       
 
         // 2. CHANGELOG OVERLAY POPUP CONTENT LOGS
         function loadChangelogSplashText() {
-            // Edit your "What's New" bulletin text logs here:
             return `
                 <div class="space-y-3 text-xs text-slate-300">
                     <div class="space-y-1.5">
                         <h4 class="text-[10px] font-bold uppercase tracking-wider text-emerald-400">🔥 What's New & Added:</h4>
-                        <p class="pl-2 border-l border-emerald-500/30 text-slate-400">Overhauled setup files for seamless version tracking configurations.</p>
-                        <p class="pl-2 border-l border-emerald-500/30 text-slate-400">Brought variables right to the top layout frame for fast access.</p>
-                    </div>
-                    <div class="space-y-1.5 pt-1">
-                        <h4 class="text-[10px] font-bold uppercase tracking-wider text-amber-400">🔧 Adjustments & Fixes:</h4>
-                        <p class="pl-2 border-l border-amber-500/30 text-slate-400">Fixed GitHub Pages 404 deployment link configurations.</p>
+                        <p class="pl-2 border-l border-emerald-500/30 text-slate-400">Upgraded splash triggers to catch both version name and tracking code shifts.</p>
+                        <p class="pl-2 border-l border-emerald-500/30 text-slate-400">Integrated automated live network cache-busting logic rules.</p>
                     </div>
                 </div>
             `;
@@ -281,17 +277,17 @@
                 <button onclick="pressCalc('/')" class="bg-indigo-950/40 text-indigo-400 border border-indigo-500/10 p-4 rounded-xl active:bg-indigo-900/30 shadow-md">/</button>
 
                 <button onclick="pressCalc('7')" class="bg-slate-900 border border-slate-800 p-4 rounded-xl active:bg-slate-800 shadow-md">7</button>
-                <button onclick="pressCalc('8')" class="bg-slate-900 border border-slate-800 p-4 rounded-xl active:bg-slate-800 shadow-md">8</button>
+                <button onclick="pressCalc('8')" class="bg-slate-900 border border-slate-800 p-4 rounded-xl active:bg-slate-700 shadow-md">8</button>
                 <button onclick="pressCalc('9')" class="bg-slate-900 border border-slate-800 p-4 rounded-xl active:bg-slate-800 shadow-md">9</button>
                 <button onclick="pressCalc('*')" class="bg-indigo-950/40 text-indigo-400 border border-indigo-500/10 p-4 rounded-xl active:bg-indigo-900/30 shadow-md">×</button>
 
                 <button onclick="pressCalc('4')" class="bg-slate-900 border border-slate-800 p-4 rounded-xl active:bg-slate-800 shadow-md">4</button>
-                <button onclick="pressCalc('5')" class="bg-slate-900 border border-slate-800 p-4 rounded-xl active:bg-slate-800 shadow-md">5</button>
+                <button onclick="pressCalc('5')" class="bg-slate-900 border border-slate-800 p-4 rounded-xl active:bg-slate-700 shadow-md">5</button>
                 <button onclick="pressCalc('6')" class="bg-slate-900 border border-slate-800 p-4 rounded-xl active:bg-slate-800 shadow-md">6</button>
                 <button onclick="pressCalc('-')" class="bg-indigo-950/40 text-indigo-400 border border-indigo-500/10 p-4 rounded-xl active:bg-indigo-900/30 shadow-md">-</button>
 
                 <button onclick="pressCalc('1')" class="bg-slate-900 border border-slate-800 p-4 rounded-xl active:bg-slate-800 shadow-md">1</button>
-                <button onclick="pressCalc('2')" class="bg-slate-900 border border-slate-800 p-4 rounded-xl active:bg-slate-800 shadow-md">2</button>
+                <button onclick="pressCalc('2')" class="bg-slate-900 border border-slate-800 p-4 rounded-xl active:bg-slate-700 shadow-md">2</button>
                 <button onclick="pressCalc('3')" class="bg-slate-900 border border-slate-800 p-4 rounded-xl active:bg-slate-800 shadow-md">3</button>
                 <button onclick="pressCalc('+')" class="bg-indigo-950/40 text-indigo-400 border border-indigo-500/10 p-4 rounded-xl active:bg-indigo-900/30 shadow-md">+</button>
 
@@ -406,13 +402,16 @@
             });
         });
 
+        // --- UPGRADED UPDATES COMBINED LOGIC FIELD CHECK ENGINE ---
         function checkAndShowChangelogSplash() {
             const lastSeenCode = localStorage.getItem('till_pro_version_checkpoint');
-            if (!lastSeenCode || parseInt(lastSeenCode) < CURRENT_VERSION_CODE) {
+            const lastSeenName = localStorage.getItem('till_pro_version_name_checkpoint');
+            
+            // Fires if code changes OR if the name changes
+            if (!lastSeenCode || parseInt(lastSeenCode) < CURRENT_VERSION_CODE || lastSeenName !== CURRENT_VERSION_NAME) {
                 document.getElementById('splash-version-name').innerText = CURRENT_VERSION_NAME;
                 document.getElementById('splash-version-code').innerText = CURRENT_VERSION_CODE;
                 
-                // Inject the content layout directly from the custom top hub configuration function
                 document.getElementById('splash-log-injector-body').innerHTML = loadChangelogSplashText();
                 
                 const splash = document.getElementById('changelog-splash-modal');
@@ -423,6 +422,7 @@
 
         function dismissChangelogSplash() {
             localStorage.setItem('till_pro_version_checkpoint', CURRENT_VERSION_CODE);
+            localStorage.setItem('till_pro_version_name_checkpoint', CURRENT_VERSION_NAME);
             document.getElementById('changelog-splash-modal').classList.add('hidden');
             document.getElementById('changelog-splash-modal').classList.remove('flex');
         }
@@ -648,12 +648,9 @@
 
                 if (isPlusMode) {
                     basePrice = currentVal;
-                    taxAmount = (currentVal * rate) / 100;
-                    finalPrice = basePrice + taxAmount;
+                    taxAmount = (currentVal * rate) / 100; finalPrice = basePrice + taxAmount;
                 } else {
-                    finalPrice = currentVal;
-                    basePrice = finalPrice / (1 + (rate / 100));
-                    taxAmount = finalPrice - basePrice;
+                    finalPrice = currentVal; basePrice = finalPrice / (1 + (rate / 100)); taxAmount = finalPrice - basePrice;
                 }
 
                 document.getElementById('gst-base-val').innerText = `₹${basePrice.toFixed(2)}`;
@@ -673,71 +670,46 @@
 
         function shuntToCounter(targetType) {
             let numericVal = Math.floor(parseFloat(calcDisplayValue)) || 0;
-            if (numericVal <= 0) {
-                alert("Please calculate or enter a valid positive value first!");
-                return;
-            }
+            if (numericVal <= 0) { alert("Please calculate or enter a valid positive value first!"); return; }
 
             if (targetType === 'ADD') {
                 document.getElementById('manual-add').value = numericVal;
                 manualAddRemark = "Transferred from GST Calculator Workspace";
-                document.getElementById('manual-sub').value = "";
-                manualSubRemark = "";
+                document.getElementById('manual-sub').value = ""; manualSubRemark = "";
             } else {
                 document.getElementById('manual-sub').value = numericVal;
                 manualSubRemark = "Transferred from GST Calculator Workspace";
-                document.getElementById('manual-add').value = "";
-                manualAddRemark = "";
+                document.getElementById('manual-add').value = ""; manualAddRemark = "";
             }
 
-            updateRemarksSummaryDisplay();
-            calculateTotal();
+            updateRemarksSummaryDisplay(); calculateTotal();
             alert(`Successfully shunted ₹${numericVal.toLocaleString()} into manual adjustments loop!`);
             switchTab('counter');
-        }
-
-        function toggleLogDropdown(event, id) {
-            event.stopPropagation();
-            const targetMenu = document.getElementById(`dropdown-${id}`);
-            const stateIsHidden = targetMenu.classList.contains('hidden');
-            document.querySelectorAll('.log-dropdown').forEach(el => el.classList.add('hidden'));
-            if (stateIsHidden) targetMenu.classList.remove('hidden');
         }
 
         function switchTab(target) {
             const cScreen = document.getElementById('counter-screen');
             const calcScreen = document.getElementById('calculator-screen');
             const dScreen = document.getElementById('diary-screen');
-            
             const cNav = document.getElementById('btn-nav-counter');
             const calcNav = document.getElementById('btn-nav-calc');
             const dNav = document.getElementById('btn-nav-diary');
-            
             const mainHeader = document.getElementById('app-main-header');
             const devCard = document.getElementById('developer-welcome-card');
 
             cNav.className = calcNav.className = dNav.className = "flex flex-col items-center justify-center py-2 rounded-xl text-slate-400 font-semibold";
 
             if (target === 'counter') {
-                cScreen.classList.remove('hidden');
-                calcScreen.classList.add('hidden');
-                dScreen.classList.add('hidden');
-                if (mainHeader) mainHeader.classList.remove('hidden');
-                if (devCard) devCard.classList.remove('hidden');
+                cScreen.classList.remove('hidden'); calcScreen.classList.add('hidden'); dScreen.classList.add('hidden');
+                if (mainHeader) mainHeader.classList.remove('hidden'); if (devCard) devCard.classList.remove('hidden');
                 cNav.className = "flex flex-col items-center justify-center py-2 rounded-xl text-emerald-400 font-bold bg-slate-950/40";
             } else if (target === 'calculator') {
-                calcScreen.classList.remove('hidden');
-                cScreen.classList.add('hidden');
-                dScreen.classList.add('hidden');
-                if (mainHeader) mainHeader.classList.add('hidden');
-                if (devCard) devCard.classList.add('hidden');
+                calcScreen.classList.remove('hidden'); cScreen.classList.add('hidden'); dScreen.classList.add('hidden');
+                if (mainHeader) mainHeader.classList.add('hidden'); if (devCard) devCard.classList.add('hidden');
                 calcNav.className = "flex flex-col items-center justify-center py-2 rounded-xl text-emerald-400 font-bold bg-slate-950/40";
             } else {
-                dScreen.classList.remove('hidden');
-                cScreen.classList.add('hidden');
-                calcScreen.classList.add('hidden');
-                if (mainHeader) mainHeader.classList.add('hidden');
-                if (devCard) devCard.classList.add('hidden');
+                dScreen.classList.remove('hidden'); cScreen.classList.add('hidden'); calcScreen.classList.add('hidden');
+                if (mainHeader) mainHeader.classList.add('hidden'); if (devCard) devCard.classList.add('hidden');
                 dNav.className = "flex flex-col items-center justify-center py-2 rounded-xl text-emerald-400 font-bold bg-slate-950/40";
                 renderLogs();
             }
@@ -745,20 +717,14 @@
 
         function executeDeleteLog(id) {
             if(!confirm("Are you sure you want to permanently delete this entry?")) return;
-            let storageData = localStorage.getItem('hopweb_cash_app');
-            if(!storageData) return;
-            let historyArray = JSON.parse(storageData);
-            historyArray = historyArray.filter(item => item.id !== id);
-            localStorage.setItem('hopweb_cash_app', JSON.stringify(historyArray));
-            renderLogs();
+            let storageData = localStorage.getItem('hopweb_cash_app'); if(!storageData) return;
+            let historyArray = JSON.parse(storageData); historyArray = historyArray.filter(item => item.id !== id);
+            localStorage.setItem('hopweb_cash_app', JSON.stringify(historyArray)); renderLogs();
         }
 
         function executeShowDetails(id) {
-            let storageData = localStorage.getItem('hopweb_cash_app');
-            if(!storageData) return;
-            let historyArray = JSON.parse(storageData);
-            const entry = historyArray.find(item => item.id === id);
-            if(!entry) return;
+            let storageData = localStorage.getItem('hopweb_cash_app'); if(!storageData) return;
+            let historyArray = JSON.parse(storageData); const entry = historyArray.find(item => item.id === id); if(!entry) return;
 
             let bodyHtml = `
                 <div class="space-y-2 bg-slate-950 p-3 rounded-xl border border-slate-800 font-mono text-[11px]">
@@ -773,16 +739,10 @@
                     <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Note Structure Summary:</h4>
                     <div class="grid grid-cols-2 gap-2 bg-slate-950/40 p-2.5 rounded-xl border border-slate-900">
             `;
-
             if(entry.breakdown) {
-                Object.entries(entry.breakdown).forEach(([noteVal, noteCount]) => {
-                    if(noteCount > 0) {
-                        bodyHtml += `<div class="font-mono text-[11px]">₹${noteVal} × ${noteCount} = ₹${(noteVal * noteCount).toLocaleString()}</div>`;
-                    }
-                });
+                Object.entries(entry.breakdown).forEach(([noteVal, noteCount]) => { if(noteCount > 0) { bodyHtml += `<div class="font-mono text-[11px]">₹${noteVal} × ${noteCount} = ₹${(noteVal * noteCount).toLocaleString()}</div>`; } });
             }
             bodyHtml += `</div></div>`;
-
             if(entry.manualAdd || entry.manualSub) {
                 bodyHtml += `<div class="space-y-1 bg-slate-950/60 p-2.5 rounded-xl border border-slate-900">
                     <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Manual Adjustment Ledger:</h4>
@@ -790,19 +750,23 @@
                     ${entry.manualSub ? `<p class="text-rose-400 font-mono">[-] Deducted ₹${entry.manualSub} <span class="text-slate-400 italic">(${entry.manualSubRemark || 'No Remark'})</span></p>` : ''}
                 </div>`;
             }
-
             document.getElementById('detail-modal-body').innerHTML = bodyHtml;
             document.getElementById('detail-modal').classList.remove('hidden');
         }
 
+        function numberToWords(num) {
+            if (num === 0) return 'Zero';
+            const a = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
+            const b = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+            const g = (n, s) => {
+                if (n == 0) return ''; let str = ''; if (n > 99) { str += a[Math.floor(n / 100)] + ' Hundred '; n %= 100; } if (n > 19) { str += b[Math.floor(n / 10)] + ' '; n %= 10; } if (n > 0) { str += a[n] + ' '; } return str + s + ' ';
+            };
+            let words = ''; words += g(Math.floor(num / 10000000), 'Crore'); words += g(Math.floor((num % 10000000) / 100000), 'Lakh'); words += g(Math.floor((num % 100000) / 1000), 'Thousand'); words += g(num % 1000, ''); return words.trim();
+        }
+
         const targetedFields = ['tally-amount', 'float-amount', 'note-500', 'note-200', 'note-100', 'note-50', 'note-20', 'note-10', 'note-5', 'note-2', 'note-1'];
         targetedFields.forEach(id => {
-            const el = document.getElementById(id);
-            if (el) {
-                el.addEventListener('focus', () => {
-                    setTimeout(() => { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 300);
-                });
-            }
+            const el = document.getElementById(id); if (el) { el.addEventListener('focus', () => { setTimeout(() => { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 300); }); }
         });
     </script>
 </body>
