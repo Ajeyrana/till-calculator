@@ -1,5 +1,5 @@
 // Change this cache name number whenever you want to force users to clear cache and update!
-const CACHE_NAME = "till-pro-cache-v4";
+const CACHE_NAME = "till-pro-cache-v5";
 const ASSETS = [
   "./",
   "./index.html"
