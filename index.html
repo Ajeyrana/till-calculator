@@ -3,26 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Till Calculator Pro</title>
+    <title>Till Calculator</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <style>
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        
-        html, body { 
-            scroll-behavior: smooth; 
-            height: auto !important; 
-            min-height: 100%;
-            overflow-y: auto !important;
-            background-color: #020617; 
-        }
-        
-        @media (max-height: 480px) {
-            nav { display: none !important; }
-        }
+        html, body { scroll-behavior: smooth; height: auto !important; min-height: 100%; overflow-y: auto !important; background-color: #020617; }
+        @media (max-height: 480px) { nav { display: none !important; } }
     </style>
-</head>
+
+    <script>
+        // 1. VERSION CONTROL SETUP
+        const CURRENT_VERSION_CODE = 4;             // <-- Bump this number (+1) to trigger the splash screen
+        const CURRENT_VERSION_NAME = "1.0.0";       // <-- Display name shown to users
+
+        // 2. CHANGELOG OVERLAY POPUP CONTENT LOGS
+        function loadChangelogSplashText() {
+            // Edit your "What's New" bulletin text logs here:
+            return `
+                <div class="space-y-3 text-xs text-slate-300">
+                    <div class="space-y-1.5">
+                        <h4 class="text-[10px] font-bold uppercase tracking-wider text-emerald-400">🔥 What's New & Added:</h4>
+                        <p class="pl-2 border-l border-emerald-500/30 text-slate-400">Overhauled setup files for seamless version tracking configurations.</p>
+                        <p class="pl-2 border-l border-emerald-500/30 text-slate-400">Brought variables right to the top layout frame for fast access.</p>
+                    </div>
+                    <div class="space-y-1.5 pt-1">
+                        <h4 class="text-[10px] font-bold uppercase tracking-wider text-amber-400">🔧 Adjustments & Fixes:</h4>
+                        <p class="pl-2 border-l border-amber-500/30 text-slate-400">Fixed GitHub Pages 404 deployment link configurations.</p>
+                    </div>
+                </div>
+            `;
+        }
+    </script>
+    </head>
 <body class="text-slate-100 font-sans select-none antialiased">
+
+    <div id="changelog-splash-modal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-[200] hidden items-center justify-center p-4">
+        <div class="bg-gradient-to-br from-slate-900 via-slate-900 to-indigo-950/40 border border-slate-800 rounded-3xl p-6 w-full max-w-sm space-y-5 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+            <div class="text-center space-y-1">
+                <div class="w-14 h-11 bg-indigo-600/10 border border-indigo-500/20 rounded-2xl mx-auto flex items-center justify-center text-xl shadow-inner">🚀</div>
+                <h2 class="text-base font-black tracking-wide text-slate-100 uppercase pt-2">System Updated!</h2>
+                <div class="inline-block bg-indigo-950 border border-indigo-500/30 text-indigo-400 font-mono font-bold text-[10px] px-2.5 py-0.5 rounded-full mt-1">
+                    v<span id="splash-version-name">0.0.0</span> (Code #<span id="splash-version-code">0</span>)
+                </div>
+            </div>
+
+            <div id="splash-log-injector-body" class="bg-slate-950/60 border border-slate-900 rounded-2xl p-4 max-h-60 overflow-y-auto no-scrollbar"></div>
+
+            <button onclick="dismissChangelogSplash()" class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-indigo-600/20 text-xs tracking-wider uppercase transition-all active:scale-98">
+                Got It, Let's Go!
+            </button>
+        </div>
+    </div>
 
     <header id="app-main-header" class="bg-slate-900/95 backdrop-blur-md sticky top-0 border-b border-slate-800/80 p-4 shadow-xl z-50">
         <div class="max-w-md mx-auto flex flex-col space-y-3">
@@ -97,7 +129,6 @@
         </div>
 
         <div id="counter-screen" class="space-y-4 h-auto overflow-visible">
-            
             <div class="shadow-md">
                 <button onclick="shareWhatsApp()" class="w-full flex items-center justify-center gap-3 py-3.5 bg-emerald-600 active:bg-emerald-700 text-white font-bold border border-emerald-500 rounded-xl transition-all shadow-lg active:scale-98">
                     <span class="text-xl">💬</span>
@@ -293,36 +324,6 @@
         </div>
     </main>
 
-    <div id="changelog-splash-modal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-[200] hidden items-center justify-center p-4">
-        <div class="bg-gradient-to-br from-slate-900 via-slate-900 to-indigo-950/40 border border-slate-800 rounded-3xl p-6 w-full max-w-sm space-y-5 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
-            
-            <div class="text-center space-y-1">
-                <div class="w-14 h-11 bg-indigo-600/10 border border-indigo-500/20 rounded-2xl mx-auto flex items-center justify-center text-xl shadow-inner">🚀</div>
-                <h2 class="text-base font-black tracking-wide text-slate-100 uppercase pt-2">System Updated!</h2>
-                <div class="inline-block bg-indigo-950 border border-indigo-500/30 text-indigo-400 font-mono font-bold text-[10px] px-2.5 py-0.5 rounded-full mt-1">
-                    v<span id="splash-version-name">2.1.0</span> (Code #<span id="splash-version-code">3</span>)
-                </div>
-            </div>
-
-            <div class="bg-slate-950/60 border border-slate-900 rounded-2xl p-4 space-y-3 text-xs text-slate-300 max-h-60 overflow-y-auto no-scrollbar">
-                <div class="space-y-1.5">
-                    <h4 class="text-[10px] font-bold uppercase tracking-wider text-emerald-400">🔥 What's New & Added:</h4>
-                    <p class="pl-2 border-l border-emerald-500/30 text-slate-400">Added auto-conversion of totals into spoken text/words on both screens.</p>
-                    <p class="pl-2 border-l border-emerald-500/30 text-slate-400">Added seamless data Shunting from GST Calc right back into Counter.</p>
-                </div>
-                <div class="space-y-1.5 pt-1">
-                    <h4 class="text-[10px] font-bold uppercase tracking-wider text-amber-400">🔧 Adjustments & Fixes:</h4>
-                    <p class="pl-2 border-l border-amber-500/30 text-slate-400">Updated GST+ 4% slot up to the standard 5% tax slab.</p>
-                    <p class="pl-2 border-l border-amber-500/30 text-slate-400">Completely overhauled orientation bugs for stable full-page scrolling mechanics.</p>
-                </div>
-            </div>
-
-            <button onclick="dismissChangelogSplash()" class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-indigo-600/20 text-xs tracking-wider uppercase transition-all active:scale-98">
-                Got It, Let's Go!
-            </button>
-        </div>
-    </div>
-
     <div id="remark-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-[100] hidden items-center justify-center p-4">
         <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 w-full max-w-sm space-y-4 shadow-2xl">
             <h3 class="text-sm font-bold uppercase tracking-wider text-slate-300">✍️ <span id="modal-title-type">Adjustment</span> Details</h3>
@@ -367,10 +368,6 @@
     </nav>
 
     <script>
-        // --- MASTER VERSION METADATA CONTROLLED BY DEVELOPER ---
-        const CURRENT_VERSION_CODE = 3; 
-        const CURRENT_VERSION_NAME = "2.1.0";
-
         const notes = [500, 200, 100, 50, 20, 10, 5, 2, 1];
         let currentGrandTotal = 0;
         let currentNetSale = 0;
@@ -403,18 +400,20 @@
 
         window.addEventListener('DOMContentLoaded', () => {
             loadActiveAppState();
-            checkAndShowChangelogSplash(); // Check update status upon load sequence triggers
+            checkAndShowChangelogSplash(); 
             window.addEventListener('click', () => {
                 document.querySelectorAll('.log-dropdown').forEach(el => el.classList.add('hidden'));
             });
         });
 
-        // --- NEW ONE-TIME CHANGELOG ENGINE LOGIC SYSTEM ---
         function checkAndShowChangelogSplash() {
             const lastSeenCode = localStorage.getItem('till_pro_version_checkpoint');
             if (!lastSeenCode || parseInt(lastSeenCode) < CURRENT_VERSION_CODE) {
                 document.getElementById('splash-version-name').innerText = CURRENT_VERSION_NAME;
                 document.getElementById('splash-version-code').innerText = CURRENT_VERSION_CODE;
+                
+                // Inject the content layout directly from the custom top hub configuration function
+                document.getElementById('splash-log-injector-body').innerHTML = loadChangelogSplashText();
                 
                 const splash = document.getElementById('changelog-splash-modal');
                 splash.classList.remove('hidden');
@@ -794,85 +793,6 @@
 
             document.getElementById('detail-modal-body').innerHTML = bodyHtml;
             document.getElementById('detail-modal').classList.remove('hidden');
-        }
-
-        function stepNote(value, delta) {
-            const input = document.getElementById(`note-${value}`);
-            let current = parseInt(input.value) || 0;
-            current += delta;
-            input.value = current >= 0 ? current : '';
-            calculateTotal();
-        }
-
-        function saveTx(type) {
-            if (currentGrandTotal === 0) {
-                alert("Please add data before saving!");
-                return;
-            }
-
-            const breakDownData = {};
-            notes.forEach(v => { breakDownData[v] = parseInt(document.getElementById(`note-${v}`).value) || 0; });
-            const rawDt = document.getElementById('live-datetime').innerText;
-
-            const txRecord = {
-                id: "tx_" + Date.now(),
-                timestamp: rawDt,
-                type: type,
-                amount: currentGrandTotal,
-                netSale: currentNetSale,
-                floatCash: parseInt(document.getElementById('float-amount').value) || 0,
-                notes: document.getElementById('total-notes-count').innerText,
-                manualAdd: parseInt(document.getElementById('manual-add').value) || 0,
-                manualSub: parseInt(document.getElementById('manual-sub').value) || 0,
-                manualAddRemark: manualAddRemark,
-                manualSubRemark: manualSubRemark,
-                breakdown: breakDownData
-            };
-
-            let storageData = localStorage.getItem('hopweb_cash_app');
-            let historyArray = storageData ? JSON.parse(storageData) : [];
-            historyArray.unshift(txRecord);
-
-            localStorage.setItem('hopweb_cash_app', JSON.stringify(historyArray));
-            alert(`Saved ${type} entry successfully!`);
-            clearAllInputs();
-        }
-
-        function renderLogs() {
-            const container = document.getElementById('logs-container');
-            let storageData = localStorage.getItem('hopweb_cash_app');
-            let historyArray = storageData ? JSON.parse(storageData) : [];
-
-            if(historyArray.length === 0) {
-                container.innerHTML = `<div class="text-center py-12 text-slate-500 font-medium text-sm">No transactions logged yet.</div>`;
-                return;
-            }
-
-            container.innerHTML = historyArray.map(item => `
-                <div class="bg-slate-900 border ${item.type === 'IN' ? 'border-emerald-500/20' : 'border-rose-500/20'} p-4 rounded-xl shadow-md relative select-none">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <span class="text-xs font-bold px-2 py-0.5 rounded ${item.type === 'IN' ? 'bg-emerald-950 text-emerald-400' : 'bg-rose-950 text-rose-400'}">${item.type}</span>
-                            <p class="text-[10px] text-slate-500 mt-2 font-medium">${item.timestamp}</p>
-                            ${item.floatCash ? `<p class="text-[9px] text-amber-400/80 mt-1">Float Deducted: ₹${item.floatCash.toLocaleString()}</p>` : ''}
-                        </div>
-                        <div class="flex items-start gap-3">
-                            <div class="text-right">
-                                <p class="text-base font-black text-emerald-400">Net: ₹${(item.netSale || item.amount).toLocaleString()}</p>
-                                <p class="text-xs text-slate-500 font-bold">Gross: ₹${item.amount.toLocaleString()}</p>
-                            </div>
-                            
-                            <div class="relative">
-                                <button onclick="toggleLogDropdown(event, '${item.id}')" class="text-slate-400 hover:text-slate-200 text-lg p-1 focus:outline-none font-bold">⋮</button>
-                                <div id="dropdown-${item.id}" class="log-dropdown hidden absolute right-0 mt-1 w-36 bg-slate-950 border border-slate-800 rounded-xl shadow-2xl z-40 text-xs">
-                                    <button onclick="executeShowDetails('${item.id}')" class="w-full text-left px-3 py-2.5 font-semibold text-slate-200 hover:bg-slate-900 rounded-t-xl">🔍 View Details</button>
-                                    <button onclick="executeDeleteLog('${item.id}')" class="w-full text-left px-3 py-2.5 font-semibold text-rose-400 hover:bg-slate-900 rounded-b-xl border-t border-slate-900">🗑️ Delete</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
         }
 
         const targetedFields = ['tally-amount', 'float-amount', 'note-500', 'note-200', 'note-100', 'note-50', 'note-20', 'note-10', 'note-5', 'note-2', 'note-1'];
