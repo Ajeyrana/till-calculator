@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Till Calculator Pro</title>
+    <!-- Tailwind CSS Engine -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <style>
         .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -12,28 +13,53 @@
         @media (max-height: 480px) { nav { display: none !important; } }
     </style>
 
+    <!-- ======================================================= -->
+    <!-- 🛠️ DEVELOPER CONFIGURATION HUB (EASY TO LOCATE AREA) 🛠️ -->
+    <!-- ======================================================= -->
     <script>
-        // 1. VERSION CONTROL SETUP
-        // Bumping these values triggers the offline service worker to flag a fresh background download
+        // 1. WEB LAYOUT VERSION CONTROLS
         const CURRENT_VERSION_CODE = 5;             
         const CURRENT_VERSION_NAME = "2.3.0";       
 
-        // 2. CHANGELOG OVERLAY POPUP CONTENT LOGS
+        // 2. NEW: NATIVE APK FILE DOWNLOAD TRACKER SETUP
+        // When you build a new APK, bump this number up and paste the direct download link below:
+        const LATEST_APK_VERSION = 2; 
+        const APK_DOWNLOAD_URL = "https://github.com/ajeyrana/till-calculator/releases/download/v2.0/TillCalculatorPro.apk";
+
+        // 3. CHANGELOG OVERLAY POPUP CONTENT LOGS
         function loadChangelogSplashText() {
             return `
                 <div class="space-y-3 text-xs text-slate-300">
                     <div class="space-y-1.5">
                         <h4 class="text-[10px] font-bold uppercase tracking-wider text-emerald-400">🔥 What's New & Added:</h4>
                         <p class="pl-2 border-l border-emerald-500/30 text-slate-400">Integrated true PWA offline Service Worker storage architecture.</p>
-                        <p class="pl-2 border-l border-emerald-500/30 text-slate-400">Added interactive background download update prompt notification banners.</p>
+                        <p class="pl-2 border-l border-emerald-500/30 text-slate-400">Added native APK update alerts with direct download deployment links.</p>
                     </div>
                 </div>
             `;
         }
     </script>
-    </head>
+    <!-- ======================================================= -->
+    <!-- ======================================================= -->
+
+</head>
 <body class="text-slate-100 font-sans select-none antialiased">
 
+    <!-- NEW: IN-APP DIRECT NATIVE APK DOWNLOAD BANNER -->
+    <div id="apk-update-banner" class="fixed top-4 inset-x-4 max-w-sm mx-auto bg-gradient-to-r from-amber-950 via-slate-900 to-amber-950 border border-amber-500/40 p-3.5 rounded-2xl shadow-2xl z-[300] hidden items-center justify-between animate-in slide-in-from-top-10 duration-300">
+        <div class="flex items-center gap-2.5">
+            <span class="text-xl">🤖</span>
+            <div>
+                <h4 class="text-xs font-black text-slate-100">New APK App Version!</h4>
+                <p class="text-[10px] text-slate-400">Download & install latest stable build.</p>
+            </div>
+        </div>
+        <a id="apk-download-anchor" href="#" target="_blank" class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-[10px] px-3 py-2 rounded-xl shadow-md uppercase tracking-wider transition-all active:scale-95">
+            Download 📥
+        </a>
+    </div>
+
+    <!-- PWA WEB RELOAD UPDATE BANNER -->
     <div id="pwa-update-banner" class="fixed top-20 inset-x-4 max-w-sm mx-auto bg-indigo-950 border border-indigo-500/40 p-3 rounded-2xl shadow-2xl z-[250] hidden items-center justify-between animate-in slide-in-from-top-6 duration-300">
         <div class="flex items-center gap-2.5">
             <span class="text-xl">📥</span>
@@ -47,6 +73,7 @@
         </button>
     </div>
 
+    <!-- CHANGELOG POPUP OVERLAY MODAL -->
     <div id="changelog-splash-modal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-[200] hidden items-center justify-center p-4">
         <div class="bg-gradient-to-br from-slate-900 via-slate-900 to-indigo-950/40 border border-slate-800 rounded-3xl p-6 w-full max-w-sm space-y-5 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
             <div class="text-center space-y-1">
@@ -65,6 +92,7 @@
         </div>
     </div>
 
+    <!-- HEADER / DASHBOARD -->
     <header id="app-main-header" class="bg-slate-900/95 backdrop-blur-md sticky top-0 border-b border-slate-800/80 p-4 shadow-xl z-50">
         <div class="max-w-md mx-auto flex flex-col space-y-3">
             <div class="flex justify-between items-center">
@@ -117,8 +145,10 @@
         </div>
     </header>
 
+    <!-- MAIN APP WRAPPER -->
     <main class="p-4 max-w-md mx-auto w-full pb-36 h-auto overflow-visible">
         
+        <!-- DEVELOPER PROFILE WELCOME CARD -->
         <div id="developer-welcome-card" class="bg-gradient-to-r from-slate-900 via-indigo-950/20 to-slate-900 border border-slate-800 rounded-2xl p-4 mb-4 flex items-center justify-between shadow-lg relative overflow-hidden transition-all duration-300">
             <div class="absolute -right-6 -bottom-6 w-24 h-24 bg-indigo-500/5 rounded-full blur-xl pointer-events-none"></div>
             <div class="flex items-center gap-3.5 z-10">
@@ -137,6 +167,7 @@
             </a>
         </div>
 
+        <!-- TAB SCREEN 1: COUNTER MODULE -->
         <div id="counter-screen" class="space-y-4 h-auto overflow-visible">
             <div class="shadow-md">
                 <button onclick="shareWhatsApp()" class="w-full flex items-center justify-center gap-3 py-3.5 bg-emerald-600 active:bg-emerald-700 text-white font-bold border border-emerald-500 rounded-xl transition-all shadow-lg active:scale-98">
@@ -146,6 +177,7 @@
             </div>
 
             <div class="space-y-2.5 h-auto overflow-visible">
+                <!-- 500 -->
                 <div id="row-500" class="flex items-center justify-between bg-slate-900 border border-slate-800 p-2.5 rounded-xl opacity-60 transition-all">
                     <span class="w-14 h-8 bg-emerald-950/40 text-emerald-400 border border-emerald-500/20 text-xs font-bold rounded-lg flex items-center justify-center">₹500</span>
                     <div class="flex items-center space-x-1">
@@ -155,6 +187,7 @@
                     </div>
                     <div class="text-right w-24 font-mono font-bold text-slate-400" id="total-500">₹0</div>
                 </div>
+                <!-- 200 -->
                 <div id="row-200" class="flex items-center justify-between bg-slate-900 border border-slate-800 p-2.5 rounded-xl opacity-60 transition-all">
                     <span class="w-14 h-8 bg-amber-950/40 text-amber-400 border border-amber-500/20 text-xs font-bold rounded-lg flex items-center justify-center">₹200</span>
                     <div class="flex items-center space-x-1">
@@ -164,6 +197,7 @@
                     </div>
                     <div class="text-right w-24 font-mono font-bold text-slate-400" id="total-200">₹0</div>
                 </div>
+                <!-- 100 -->
                 <div id="row-100" class="flex items-center justify-between bg-slate-900 border border-slate-800 p-2.5 rounded-xl opacity-60 transition-all">
                     <span class="w-14 h-8 bg-indigo-950/40 text-indigo-400 border border-indigo-500/20 text-xs font-bold rounded-lg flex items-center justify-center">₹100</span>
                     <div class="flex items-center space-x-1">
@@ -173,6 +207,7 @@
                     </div>
                     <div class="text-right w-24 font-mono font-bold text-slate-400" id="total-100">₹0</div>
                 </div>
+                <!-- 50 -->
                 <div id="row-50" class="flex items-center justify-between bg-slate-900 border border-slate-800 p-2.5 rounded-xl opacity-60 transition-all">
                     <span class="w-14 h-8 bg-cyan-950/40 text-cyan-400 border border-cyan-500/20 text-xs font-bold rounded-lg flex items-center justify-center">₹50</span>
                     <div class="flex items-center space-x-1">
@@ -182,6 +217,7 @@
                     </div>
                     <div class="text-right w-24 font-mono font-bold text-slate-400" id="total-50">₹0</div>
                 </div>
+                <!-- 20 -->
                 <div id="row-20" class="flex items-center justify-between bg-slate-900 border border-slate-800 p-2.5 rounded-xl opacity-60 transition-all">
                     <span class="w-14 h-8 bg-yellow-950/40 text-yellow-400 border border-yellow-500/20 text-xs font-bold rounded-lg flex items-center justify-center">₹20</span>
                     <div class="flex items-center space-x-1">
@@ -191,6 +227,7 @@
                     </div>
                     <div class="text-right w-24 font-mono font-bold text-slate-400" id="total-20">₹0</div>
                 </div>
+                <!-- 10 -->
                 <div id="row-10" class="flex items-center justify-between bg-slate-900 border border-slate-800 p-2.5 rounded-xl opacity-60 transition-all">
                     <span class="w-14 h-8 bg-orange-950/40 text-orange-400 border border-orange-500/20 text-xs font-bold rounded-lg flex items-center justify-center">₹10</span>
                     <div class="flex items-center space-x-1">
@@ -200,6 +237,7 @@
                     </div>
                     <div class="text-right w-24 font-mono font-bold text-slate-400" id="total-10">₹0</div>
                 </div>
+                <!-- 5 -->
                 <div id="row-5" class="flex items-center justify-between bg-slate-900 border border-slate-800 p-2.5 rounded-xl opacity-60 transition-all">
                     <span class="w-14 h-8 bg-teal-950/40 text-teal-400 border border-teal-500/20 text-xs font-bold rounded-lg flex items-center justify-center">₹5</span>
                     <div class="flex items-center space-x-1">
@@ -209,6 +247,7 @@
                     </div>
                     <div class="text-right w-24 font-mono font-bold text-slate-400" id="total-5">₹0</div>
                 </div>
+                <!-- 2 -->
                 <div id="row-2" class="flex items-center justify-between bg-slate-900 border border-slate-800 p-2.5 rounded-xl opacity-60 transition-all">
                     <span class="w-14 h-8 bg-rose-950/40 text-rose-400 border border-rose-500/20 text-xs font-bold rounded-lg flex items-center justify-center">₹2</span>
                     <div class="flex items-center space-x-1">
@@ -218,6 +257,7 @@
                     </div>
                     <div class="text-right w-24 font-mono font-bold text-slate-400" id="total-2">₹0</div>
                 </div>
+                <!-- 1 -->
                 <div id="row-1" class="flex items-center justify-between bg-slate-900 border border-slate-800 p-2.5 rounded-xl opacity-60 transition-all">
                     <span class="w-14 h-8 bg-stone-950/40 text-stone-400 border border-stone-500/20 text-xs font-bold rounded-lg flex items-center justify-center">₹1</span>
                     <div class="flex items-center space-x-1">
@@ -229,6 +269,7 @@
                 </div>
             </div>
 
+            <!-- MANUAL ADJUSTMENT SYSTEM SECTION -->
             <div id="adjustment-card" class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-lg space-y-3">
                 <div class="flex items-center justify-between">
                     <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">➕ Manual Adjustments</h3>
@@ -247,6 +288,7 @@
                 <div id="remarks-summary-view" class="hidden text-[11px] text-slate-400 bg-slate-950/60 p-2 rounded-lg italic"></div>
             </div>
 
+            <!-- TRANSACTION SAVE ACTIONS -->
             <div class="grid grid-cols-2 gap-3">
                 <button onclick="saveTx('IN')" class="bg-emerald-600 active:bg-emerald-700 text-white font-bold py-3.5 rounded-xl shadow-lg border border-emerald-500 transition-transform active:scale-98">
                     📥 Save Cash In
@@ -257,6 +299,7 @@
             </div>
         </div>
 
+        <!-- TAB SCREEN 2: INTEGRATED GST CALCULATOR MODULE -->
         <div id="calculator-screen" class="hidden space-y-4">
             <div class="bg-gradient-to-br from-slate-900 to-slate-950 border border-slate-800 rounded-2xl p-5 shadow-2xl space-y-2">
                 <div class="text-right text-slate-500 text-sm font-mono tracking-wide h-6" id="calc-history-string"></div>
@@ -296,7 +339,7 @@
 
                 <button onclick="pressCalc('4')" class="bg-slate-900 border border-slate-800 p-4 rounded-xl active:bg-slate-800 shadow-md">4</button>
                 <button onclick="pressCalc('5')" class="bg-slate-900 border border-slate-800 p-4 rounded-xl active:bg-slate-700 shadow-md">5</button>
-                <button onclick="pressCalc('6')" class="bg-slate-900 border border-slate-800 p-4 rounded-xl active:bg-slate-800 shadow-md">6</button>
+                <button onclick="pressCalc('6')" class="bg-slate-900 border border-slate-800 p-4 rounded-xl active:bg-slate-700 shadow-md">6</button>
                 <button onclick="pressCalc('-')" class="bg-indigo-950/40 text-indigo-400 border border-indigo-500/10 p-4 rounded-xl active:bg-indigo-900/30 shadow-md">-</button>
 
                 <button onclick="pressCalc('1')" class="bg-slate-900 border border-slate-800 p-4 rounded-xl active:bg-slate-800 shadow-md">1</button>
@@ -310,6 +353,7 @@
                 <button onclick="pressCalc('=')" class="bg-sky-600 text-white p-4 rounded-xl active:bg-sky-700 shadow-lg shadow-sky-600/20 text-xl">=</button>
             </div>
 
+            <!-- EXPANSION BOTTOM AREA WORKSPACE -->
             <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3 shadow-lg">
                 <div class="space-y-1">
                     <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest block">🔤 Value in Indian Words</span>
@@ -327,12 +371,14 @@
             </div>
         </div>
 
+        <!-- TAB SCREEN 3: DIARY LOG MODULE -->
         <div id="diary-screen" class="hidden space-y-3">
             <h2 class="text-lg font-black text-slate-300">Transaction Logs</h2>
             <div id="logs-container" class="space-y-3"></div>
         </div>
     </main>
 
+    <!-- REMARKS POPUP MODAL -->
     <div id="remark-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-[100] hidden items-center justify-center p-4">
         <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 w-full max-w-sm space-y-4 shadow-2xl">
             <h3 class="text-sm font-bold uppercase tracking-wider text-slate-300">✍️ <span id="modal-title-type">Adjustment</span> Details</h3>
@@ -353,6 +399,7 @@
         </div>
     </div>
 
+    <!-- DETAILED VIEW MODAL -->
     <div id="detail-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-[100] hidden items-center justify-center p-4">
         <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 w-full max-w-sm max-h-[85vh] flex flex-col shadow-2xl">
             <h3 class="text-sm font-bold uppercase tracking-wider text-slate-300 pb-3 border-b border-slate-800">📝 Audit Summary Details</h3>
@@ -361,6 +408,7 @@
         </div>
     </div>
 
+    <!-- FIXED NAVIGATION BAR -->
     <nav class="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-md border-t border-slate-800 grid grid-cols-3 p-2 shadow-2xl z-50 max-w-md mx-auto rounded-t-2xl">
         <button id="btn-nav-counter" onclick="switchTab('counter')" class="flex flex-col items-center justify-center py-2 rounded-xl text-emerald-400 font-bold bg-slate-950/40">
             <span class="text-lg">🧮</span>
@@ -376,19 +424,20 @@
         </button>
     </nav>
 
+    <!-- APP ENGINE SCRIPT -->
     <script>
+        // Native App Wrapper Version Marker Profile (Hardcoded inside the wrapper APK layout framework)
+        const MY_APP_APK_VERSION = 1; 
+
         let pwaRegistrationWorker = null;
 
-        // --- NEW: OFFLINE PWA SERVICE WORKER CONTROLLER LOGIC ---
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('./sw.js').then(reg => {
                 pwaRegistrationWorker = reg;
-                // Listen for structural file changes on the server side
                 reg.addEventListener('updatefound', () => {
                     const newWorker = reg.installing;
                     newWorker.addEventListener('statechange', () => {
                         if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                            // Display update prompt badge across the UI view layer frame
                             document.getElementById('pwa-update-banner').classList.remove('hidden');
                             document.getElementById('pwa-update-banner').classList.add('flex');
                         }
@@ -419,9 +468,23 @@
         setInterval(runLiveClock, 1000); runLiveClock();
 
         window.addEventListener('DOMContentLoaded', () => {
-            loadActiveAppState(); checkAndShowChangelogSplash(); 
+            loadActiveAppState(); 
+            checkAndShowChangelogSplash();
+            checkForNativeApkUpdates(); // Run native verification logic on startup
             window.addEventListener('click', () => { document.querySelectorAll('.log-dropdown').forEach(el => el.classList.add('hidden')); });
         });
+
+        // --- NEW: DIRECT APK DOWNLOADING LIFECYCLE MANAGER ---
+        function checkForNativeApkUpdates() {
+            if (MY_APP_APK_VERSION < LATEST_APK_VERSION) {
+                const downloadBtn = document.getElementById('apk-download-anchor');
+                if (downloadBtn) {
+                    downloadBtn.href = APK_DOWNLOAD_URL;
+                    document.getElementById('apk-update-banner').classList.remove('hidden');
+                    document.getElementById('apk-update-banner').classList.add('flex');
+                }
+            }
+        }
 
         function checkAndShowChangelogSplash() {
             const lastSeenCode = localStorage.getItem('till_pro_version_checkpoint');
@@ -561,7 +624,7 @@
                 calcScreen.classList.remove('hidden'); cScreen.classList.add('hidden'); dScreen.classList.add('hidden'); if (mainHeader) mainHeader.classList.add('hidden'); if (devCard) devCard.classList.add('hidden');
                 calcNav.className = "flex flex-col items-center justify-center py-2 rounded-xl text-emerald-400 font-bold bg-slate-950/40";
             } else {
-                dScreen.classList.remove('hidden'); cScreen.classList.add('hidden'); calcScreen.classList.add('hidden'); if (mainHeader) mainHeader.classList.add('hidden'); if (devCard) devCard.githubclassList.add('hidden');
+                dScreen.classList.remove('hidden'); cScreen.classList.add('hidden'); calcScreen.classList.add('hidden'); if (mainHeader) mainHeader.classList.add('hidden'); if (devCard) devCard.classList.add('hidden');
                 dNav.className = "flex flex-col items-center justify-center py-2 rounded-xl text-emerald-400 font-bold bg-slate-950/40"; renderLogs();
             }
         }
@@ -646,6 +709,14 @@
             const a = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen']; const b = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
             const g = (n, s) => { if (n == 0) return ''; let str = ''; if (n > 99) { str += a[Math.floor(n / 100)] + ' Hundred '; n %= 100; } if (n > 19) { str += b[Math.floor(n / 10)] + ' '; n %= 10; } if (n > 0) { str += a[n] + ' '; } return str + s + ' '; };
             let words = ''; words += g(Math.floor(num / 10000000), 'Crore'); words += g(Math.floor((num % 10000000) / 100000), 'Lakh'); words += g(Math.floor((num % 100000) / 1000), 'Thousand'); words += g(num % 1000, ''); return words.trim();
+        }
+
+        function shareWhatsApp() {
+            let message = `📊 *CASH REGISTER AUDIT REPORT*\n📅 Status: ${document.getElementById('live-datetime').innerText}\n\n💼 *Shop Float:* ₹${Number(document.getElementById('float-amount').value || 0).toLocaleString()}\n📈 *Net Cash Sale:* ₹${currentNetSale.toLocaleString()}\n💰 *Total Cash:* ₹${currentGrandTotal.toLocaleString()}\n\n🔢 *DENOMINATION BREAKDOWN:*\n`;
+            notes.forEach(value => { const count = parseInt(document.getElementById(`note-${value}`).value) || 0; if(count > 0) { message += `• ₹${value} x ${count} = ₹${(value * count).toLocaleString()}\n`; } });
+            const mAdd = document.getElementById('manual-add').value || 0; const mSub = document.getElementById('manual-sub').value || 0;
+            if(mAdd > 0) message += `➕ *Manual Add:* ₹${Number(mAdd).toLocaleString()} (${manualAddRemark})\n`; if(mSub > 0) message += `➖ *Manual Sub:* ₹${Number(mSub).toLocaleString()} (${manualSubRemark})\n`;
+            window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`, '_blank');
         }
 
         const targetedFields = ['tally-amount', 'float-amount', 'note-500', 'note-200', 'note-100', 'note-50', 'note-20', 'note-10', 'note-5', 'note-2', 'note-1'];
