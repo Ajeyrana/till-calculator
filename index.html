@@ -14,9 +14,9 @@
 
     <script>
         // 1. VERSION CONTROL SETUP
-        // Changing EITHER of these variables will instantly trigger the update splash overlay!
-        const CURRENT_VERSION_CODE = 6;             
-        const CURRENT_VERSION_NAME = "3.4.0";       
+        // Bumping these values triggers the offline service worker to flag a fresh background download
+        const CURRENT_VERSION_CODE = 5;             
+        const CURRENT_VERSION_NAME = "2.3.0";       
 
         // 2. CHANGELOG OVERLAY POPUP CONTENT LOGS
         function loadChangelogSplashText() {
@@ -24,8 +24,8 @@
                 <div class="space-y-3 text-xs text-slate-300">
                     <div class="space-y-1.5">
                         <h4 class="text-[10px] font-bold uppercase tracking-wider text-emerald-400">🔥 What's New & Added:</h4>
-                        <p class="pl-2 border-l border-emerald-500/30 text-slate-400">Fixed the tracking loop bug so version name changes fire instantly.</p>
-                        <p class="pl-2 border-l border-emerald-500/30 text-slate-400">Optimized layout data sync memory caching parameters.</p>
+                        <p class="pl-2 border-l border-emerald-500/30 text-slate-400">Integrated true PWA offline Service Worker storage architecture.</p>
+                        <p class="pl-2 border-l border-emerald-500/30 text-slate-400">Added interactive background download update prompt notification banners.</p>
                     </div>
                 </div>
             `;
@@ -33,6 +33,19 @@
     </script>
     </head>
 <body class="text-slate-100 font-sans select-none antialiased">
+
+    <div id="pwa-update-banner" class="fixed top-20 inset-x-4 max-w-sm mx-auto bg-indigo-950 border border-indigo-500/40 p-3 rounded-2xl shadow-2xl z-[250] hidden items-center justify-between animate-in slide-in-from-top-6 duration-300">
+        <div class="flex items-center gap-2.5">
+            <span class="text-xl">📥</span>
+            <div>
+                <h4 class="text-xs font-black text-slate-100">Update Available!</h4>
+                <p class="text-[10px] text-slate-400">Ready for instant offline install.</p>
+            </div>
+        </div>
+        <button onclick="applySystemUpdate()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[10px] px-3 py-1.5 rounded-xl shadow-md uppercase tracking-wider transition-all">
+            Update Now
+        </button>
+    </div>
 
     <div id="changelog-splash-modal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-[200] hidden items-center justify-center p-4">
         <div class="bg-gradient-to-br from-slate-900 via-slate-900 to-indigo-950/40 border border-slate-800 rounded-3xl p-6 w-full max-w-sm space-y-5 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
@@ -364,25 +377,43 @@
     </nav>
 
     <script>
-        const notes = [500, 200, 100, 50, 20, 10, 5, 2, 1];
-        let currentGrandTotal = 0;
-        let currentNetSale = 0;
-        
-        let activeRemarkType = "";
-        let manualAddRemark = "";
-        let manualSubRemark = "";
+        let pwaRegistrationWorker = null;
 
-        let calcDisplayValue = "0";
-        let calcResetOnNextKey = false;
+        // --- NEW: OFFLINE PWA SERVICE WORKER CONTROLLER LOGIC ---
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('./sw.js').then(reg => {
+                pwaRegistrationWorker = reg;
+                // Listen for structural file changes on the server side
+                reg.addEventListener('updatefound', () => {
+                    const newWorker = reg.installing;
+                    newWorker.addEventListener('statechange', () => {
+                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                            // Display update prompt badge across the UI view layer frame
+                            document.getElementById('pwa-update-banner').classList.remove('hidden');
+                            document.getElementById('pwa-update-banner').classList.add('flex');
+                        }
+                    });
+                });
+            }).catch(err => console.error("PWA registration failed:", err));
+        }
+
+        function applySystemUpdate() {
+            if (pwaRegistrationWorker && pwaRegistrationWorker.waiting) {
+                pwaRegistrationWorker.waiting.postMessage({ action: 'skipWaiting' });
+            }
+            window.location.reload();
+        }
+
+        const notes = [500, 200, 100, 50, 20, 10, 5, 2, 1];
+        let currentGrandTotal = 0; let currentNetSale = 0;
+        let activeRemarkType = ""; let manualAddRemark = ""; let manualSubRemark = "";
+        let calcDisplayValue = "0"; let calcResetOnNextKey = false;
 
         function runLiveClock() {
-            const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-            const d = new Date();
+            const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']; const d = new Date();
             const dateStr = `${days[d.getDay()]}, ${d.getMonth() + 1}/${d.getDate()}/${d.getFullYear()}`;
-            let hours = d.getHours(); let minutes = d.getMinutes(); let seconds = d.getSeconds();
-            const ampm = hours >= 12 ? 'PM' : 'AM';
-            hours = hours % 12; hours = hours ? hours : 12; 
-            minutes = minutes < 10 ? '0'+minutes : minutes; seconds = seconds < 10 ? '0'+seconds : seconds;
+            let hours = d.getHours(); let minutes = d.getMinutes(); let seconds = d.getSeconds(); const ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12; hours = hours ? hours : 12; minutes = minutes < 10 ? '0'+minutes : minutes; seconds = seconds < 10 ? '0'+seconds : seconds;
             document.getElementById('live-datetime').innerHTML = `${dateStr} • <span class="text-emerald-400 font-bold">${hours}:${minutes}:${seconds} ${ampm}</span>`;
         }
         setInterval(runLiveClock, 1000); runLiveClock();
@@ -392,26 +423,19 @@
             window.addEventListener('click', () => { document.querySelectorAll('.log-dropdown').forEach(el => el.classList.add('hidden')); });
         });
 
-        // --- FIXED TRACKING SCRIPT ENGINE CHECK ---
         function checkAndShowChangelogSplash() {
             const lastSeenCode = localStorage.getItem('till_pro_version_checkpoint');
             const lastSeenName = localStorage.getItem('till_pro_version_name_checkpoint');
-            
             if (!lastSeenCode || parseInt(lastSeenCode) < CURRENT_VERSION_CODE || lastSeenName !== CURRENT_VERSION_NAME) {
-                document.getElementById('splash-version-name').innerText = CURRENT_VERSION_NAME;
-                document.getElementById('splash-version-code').innerText = CURRENT_VERSION_CODE;
+                document.getElementById('splash-version-name').innerText = CURRENT_VERSION_NAME; document.getElementById('splash-version-code').innerText = CURRENT_VERSION_CODE;
                 document.getElementById('splash-log-injector-body').innerHTML = loadChangelogSplashText();
-                
-                const splash = document.getElementById('changelog-splash-modal');
-                splash.classList.remove('hidden'); splash.classList.add('flex');
+                const splash = document.getElementById('changelog-splash-modal'); splash.classList.remove('hidden'); splash.classList.add('flex');
             }
         }
 
         function dismissChangelogSplash() {
-            localStorage.setItem('till_pro_version_checkpoint', CURRENT_VERSION_CODE);
-            localStorage.setItem('till_pro_version_name_checkpoint', CURRENT_VERSION_NAME);
-            document.getElementById('changelog-splash-modal').classList.add('hidden');
-            document.getElementById('changelog-splash-modal').classList.remove('flex');
+            localStorage.setItem('till_pro_version_checkpoint', CURRENT_VERSION_CODE); localStorage.setItem('till_pro_version_name_checkpoint', CURRENT_VERSION_NAME);
+            document.getElementById('changelog-splash-modal').classList.add('hidden'); document.getElementById('changelog-splash-modal').classList.remove('flex');
         }
 
         function calculateTotal() {
@@ -428,35 +452,24 @@
                     display.classList.remove('text-emerald-400'); display.classList.add('text-slate-400'); display.innerText = `₹0`;
                 }
             });
-
-            const manualAdd = parseInt(document.getElementById('manual-add').value) || 0;
-            const manualSub = parseInt(document.getElementById('manual-sub').value) || 0;
-            const floatCash = parseInt(document.getElementById('float-amount').value) || 0;
+            const manualAdd = parseInt(document.getElementById('manual-add').value) || 0; const manualSub = parseInt(document.getElementById('manual-sub').value) || 0; const floatCash = parseInt(document.getElementById('float-amount').value) || 0;
             let absoluteTotal = notesTotal + manualAdd - manualSub; if (absoluteTotal < 0) absoluteTotal = 0; 
             let netSale = absoluteTotal - floatCash; currentGrandTotal = absoluteTotal; currentNetSale = netSale;
-
-            document.getElementById('grand-total').innerText = absoluteTotal.toLocaleString();
-            document.getElementById('net-sale-total').innerText = netSale.toLocaleString();
-            document.getElementById('total-notes-count').innerText = notesCount;
-            document.getElementById('total-words').innerText = numberToWords(absoluteTotal) + " Rupees Only";
+            document.getElementById('grand-total').innerText = absoluteTotal.toLocaleString(); document.getElementById('net-sale-total').innerText = netSale.toLocaleString();
+            document.getElementById('total-notes-count').innerText = notesCount; document.getElementById('total-words').innerText = numberToWords(absoluteTotal) + " Rupees Only";
             handleTallyMatching(netSale); saveActiveAppState();
         }
 
         function openRemarkModal(type) {
-            activeRemarkType = type;
-            document.getElementById('modal-title-type').innerText = type === 'ADD' ? 'Addition (+)' : 'Subtraction (-)';
-            const existingVal = document.getElementById(type === 'ADD' ? 'manual-add' : 'manual-sub').value;
-            const existingText = type === 'ADD' ? manualAddRemark : manualSubRemark;
-            document.getElementById('modal-remark-amount').value = existingVal || '';
-            document.getElementById('modal-remark-text').value = existingText || '';
+            activeRemarkType = type; document.getElementById('modal-title-type').innerText = type === 'ADD' ? 'Addition (+)' : 'Subtraction (-)';
+            const existingVal = document.getElementById(type === 'ADD' ? 'manual-add' : 'manual-sub').value; const existingText = type === 'ADD' ? manualAddRemark : manualSubRemark;
+            document.getElementById('modal-remark-amount').value = existingVal || ''; document.getElementById('modal-remark-text').value = existingText || '';
             document.getElementById('remark-modal').classList.remove('hidden'); document.getElementById('remark-modal').classList.add('flex');
         }
-
         function closeRemarkModal() { document.getElementById('remark-modal').classList.add('hidden'); document.getElementById('remark-modal').classList.remove('flex'); }
 
         function applyRemarkModal() {
-            const val = document.getElementById('modal-remark-amount').value;
-            const txt = document.getElementById('modal-remark-text').value;
+            const val = document.getElementById('modal-remark-amount').value; const txt = document.getElementById('modal-remark-text').value;
             if (activeRemarkType === 'ADD') { document.getElementById('manual-add').value = val; manualAddRemark = txt; } 
             else { document.getElementById('manual-sub').value = val; manualSubRemark = txt; }
             updateRemarksSummaryDisplay(); closeRemarkModal(); calculateTotal();
@@ -464,15 +477,13 @@
 
         function updateRemarksSummaryDisplay() {
             const container = document.getElementById('remarks-summary-view'); let textOutput = "";
-            if(manualAddRemark) textOutput += `<strong>[+] Note:</strong> ${manualAddRemark} `;
-            if(manualSubRemark) textOutput += `<strong>[-] Note:</strong> ${manualSubRemark}`;
+            if(manualAddRemark) textOutput += `<strong>[+] Note:</strong> ${manualAddRemark} `; if(manualSubRemark) textOutput += `<strong>[-] Note:</strong> ${manualSubRemark}`;
             if(textOutput) { container.innerHTML = textOutput; container.classList.remove('hidden'); } else { container.classList.add('hidden'); }
         }
 
         function saveActiveAppState() {
             const state = { manualAdd: document.getElementById('manual-add').value, manualSub: document.getElementById('manual-sub').value, manualAddRemark: manualAddRemark, manualSubRemark: manualSubRemark, floatAmount: document.getElementById('float-amount').value, tallyAmount: document.getElementById('tally-amount').value, counts: {} };
-            notes.forEach(v => { state.counts[v] = document.getElementById(`note-${v}`).value; });
-            localStorage.setItem('hopweb_active_state', JSON.stringify(state));
+            notes.forEach(v => { state.counts[v] = document.getElementById(`note-${v}`).value; }); localStorage.setItem('hopweb_active_state', JSON.stringify(state));
         }
 
         function loadActiveAppState() {
@@ -486,17 +497,11 @@
         }
 
         function handleTallyMatching(netSaleTotal) {
-            const tallyInput = document.getElementById('tally-amount').value;
-            const statusBox = document.getElementById('tally-status-box'); const statusText = document.getElementById('tally-status-text');
-            if (!tallyInput) { statusBox.classList.add('hidden'); return; }
-            const tallyTarget = parseInt(tallyInput) || 0; statusBox.classList.remove('hidden');
-            if (netSaleTotal === tallyTarget) {
-                statusBox.className = "text-xs font-bold p-2 rounded-xl text-center border bg-emerald-950/50 text-emerald-400 border-emerald-500/30 w-full"; statusText.innerText = "🎉 Net Sale Matches Target Perfectly!";
-            } else if (netSaleTotal < tallyTarget) {
-                const diff = tallyTarget - netSaleTotal; statusBox.className = "text-xs font-bold p-2 rounded-xl text-center border bg-amber-950/50 text-amber-400 border-amber-500/30 w-full"; statusText.innerText = `⚠️ Sale Short by: -₹${diff.toLocaleString()}`;
-            } else {
-                const diff = netSaleTotal - tallyTarget; statusBox.className = "text-xs font-bold p-2 rounded-xl text-center border bg-blue-950/50 text-blue-400 border-blue-500/30 w-full"; statusText.innerText = `💥 Sale Surplus Extra: +₹${diff.toLocaleString()}`;
-            }
+            const tallyInput = document.getElementById('tally-amount').value; const statusBox = document.getElementById('tally-status-box'); const statusText = document.getElementById('tally-status-text');
+            if (!tallyInput) { statusBox.classList.add('hidden'); return; } const tallyTarget = parseInt(tallyInput) || 0; statusBox.classList.remove('hidden');
+            if (netSaleTotal === tallyTarget) { statusBox.className = "text-xs font-bold p-2 rounded-xl text-center border bg-emerald-950/50 text-emerald-400 border-emerald-500/30 w-full"; statusText.innerText = "🎉 Net Sale Matches Target Perfectly!"; } 
+            else if (netSaleTotal < tallyTarget) { const diff = tallyTarget - netSaleTotal; statusBox.className = "text-xs font-bold p-2 rounded-xl text-center border bg-amber-950/50 text-amber-400 border-amber-500/30 w-full"; statusText.innerText = `⚠️ Sale Short by: -₹${diff.toLocaleString()}`; } 
+            else { const diff = netSaleTotal - tallyTarget; statusBox.className = "text-xs font-bold p-2 rounded-xl text-center border bg-blue-950/50 text-blue-400 border-blue-500/30 w-full"; statusText.innerText = `💥 Sale Surplus Extra: +₹${diff.toLocaleString()}`; }
         }
 
         function updateCalcWordsOutput(num) {
@@ -509,10 +514,8 @@
             if (key === 'AC') { calcDisplayValue = "0"; history.innerText = ""; summary.classList.add('hidden'); } 
             else if (key === 'C') { calcDisplayValue = calcDisplayValue.slice(0, -1); if (calcDisplayValue === "" || calcDisplayValue === "-") calcDisplayValue = "0"; } 
             else if (key === '=') {
-                try {
-                    let sanitisedExp = calcDisplayValue.replace(/×/g, '*').replace(/÷/g, '/'); let evaluatedResult = eval(sanitisedExp);
-                    history.innerText = calcDisplayValue + " ="; calcDisplayValue = String(Number(evaluatedResult.toFixed(4))); calcResetOnNextKey = true;
-                } catch (e) { calcDisplayValue = "Error"; calcResetOnNextKey = true; }
+                try { let sanitisedExp = calcDisplayValue.replace(/×/g, '*').replace(/÷/g, '/'); let evaluatedResult = eval(sanitisedExp); history.innerText = calcDisplayValue + " ="; calcDisplayValue = String(Number(evaluatedResult.toFixed(4))); calcResetOnNextKey = true; } 
+                catch (e) { calcDisplayValue = "Error"; calcResetOnNextKey = true; }
             } else if (['+', '-', '*', '/', '%'].includes(key)) {
                 calcResetOnNextKey = false; const lastChar = calcDisplayValue.slice(-1);
                 if (['+', '-', '*', '/'].includes(lastChar)) { calcDisplayValue = calcDisplayValue.slice(0, -1) + key; } else { calcDisplayValue += key; }
@@ -558,7 +561,7 @@
                 calcScreen.classList.remove('hidden'); cScreen.classList.add('hidden'); dScreen.classList.add('hidden'); if (mainHeader) mainHeader.classList.add('hidden'); if (devCard) devCard.classList.add('hidden');
                 calcNav.className = "flex flex-col items-center justify-center py-2 rounded-xl text-emerald-400 font-bold bg-slate-950/40";
             } else {
-                dScreen.classList.remove('hidden'); cScreen.classList.add('hidden'); calcScreen.classList.add('hidden'); if (mainHeader) mainHeader.classList.add('hidden'); if (devCard) devCard.classList.add('hidden');
+                dScreen.classList.remove('hidden'); cScreen.classList.add('hidden'); calcScreen.classList.add('hidden'); if (mainHeader) mainHeader.classList.add('hidden'); if (devCard) devCard.githubclassList.add('hidden');
                 dNav.className = "flex flex-col items-center justify-center py-2 rounded-xl text-emerald-400 font-bold bg-slate-950/40"; renderLogs();
             }
         }
@@ -584,9 +587,7 @@
                     <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Note Structure Summary:</h4>
                     <div class="grid grid-cols-2 gap-2 bg-slate-950/40 p-2.5 rounded-xl border border-slate-900">
             `;
-            if(entry.breakdown) {
-                Object.entries(entry.breakdown).forEach(([noteVal, noteCount]) => { if(noteCount > 0) { bodyHtml += `<div class="font-mono text-[11px]">₹${noteVal} × ${noteCount} = ₹${(noteVal * noteCount).toLocaleString()}</div>`; } });
-            }
+            if(entry.breakdown) { Object.entries(entry.breakdown).forEach(([noteVal, noteCount]) => { if(noteCount > 0) { bodyHtml += `<div class="font-mono text-[11px]">₹${noteVal} × ${noteCount} = ₹${(noteVal * noteCount).toLocaleString()}</div>`; } }); }
             bodyHtml += `</div></div>`;
             if(entry.manualAdd || entry.manualSub) {
                 bodyHtml += `<div class="space-y-1 bg-slate-950/60 p-2.5 rounded-xl border border-slate-900">
@@ -642,11 +643,8 @@
 
         function numberToWords(num) {
             if (num === 0) return 'Zero';
-            const a = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
-            const b = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
-            const g = (n, s) => {
-                if (n == 0) return ''; let str = ''; if (n > 99) { str += a[Math.floor(n / 100)] + ' Hundred '; n %= 100; } if (n > 19) { str += b[Math.floor(n / 10)] + ' '; n %= 10; } if (n > 0) { str += a[n] + ' '; } return str + s + ' ';
-            };
+            const a = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen']; const b = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+            const g = (n, s) => { if (n == 0) return ''; let str = ''; if (n > 99) { str += a[Math.floor(n / 100)] + ' Hundred '; n %= 100; } if (n > 19) { str += b[Math.floor(n / 10)] + ' '; n %= 10; } if (n > 0) { str += a[n] + ' '; } return str + s + ' '; };
             let words = ''; words += g(Math.floor(num / 10000000), 'Crore'); words += g(Math.floor((num % 10000000) / 100000), 'Lakh'); words += g(Math.floor((num % 100000) / 1000), 'Thousand'); words += g(num % 1000, ''); return words.trim();
         }
 
