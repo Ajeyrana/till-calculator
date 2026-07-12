@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Till Calculator Pro</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        html, body { 
+            scroll-behavior: smooth; 
+            height: auto !important; 
+            min-height: 100%;
+            overflow-y: auto !important;
+            background-color: #020617; 
+        }
+        
+        @media (max-height: 480px) {
+            nav { display: none !important; }
+        }
+    </style>
+</head>
+<body class="text-slate-100 font-sans select-none antialiased">
+
+    <header id="app-main-header" class="bg-slate-900/95 backdrop-blur-md sticky top-0 border-b border-slate-800/80 p-4 shadow-xl z-50">
+        <div class="max-w-md mx-auto flex flex-col space-y-3">
+            <div class="flex justify-between items-center">
+                <h1 class="text-sm font-bold tracking-wider text-slate-400 uppercase">⚡ Till Calculator</h1>
+                <button onclick="clearAllInputs()" class="text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-rose-400 px-3 py-1.5 rounded-lg border border-slate-700 transition-colors">
+                    Clear All 🗑️
+                </button>
+            </div>
+            
+            <div class="bg-gradient-to-br from-slate-900 to-slate-950 border border-slate-800 rounded-2xl p-4 shadow-inner space-y-3">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <p class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Gross Cash (Counted)</p>
+                        <div class="text-2xl font-black text-slate-200 tracking-tight whitespace-nowrap">
+                            ₹ <span id="grand-total">0</span>
+                        </div>
+                    </div>
+                    <div>
+                        <p class="text-[10px] text-emerald-400 uppercase font-bold tracking-wider">Net Cash Sale</p>
+                        <div class="text-2xl font-black text-emerald-400 tracking-tight whitespace-nowrap">
+                            ₹ <span id="net-sale-total">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2.5 pt-1">
+                    <div class="bg-slate-900/90 p-2 rounded-xl border border-slate-800">
+                        <label class="block text-[9px] text-amber-400 font-bold uppercase tracking-wide mb-1">💼 Shop Float (Reserve)</label>
+                        <input type="number" id="float-amount" placeholder="e.g. 5000" oninput="calculateTotal()" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1 text-xs font-bold font-mono text-slate-100 focus:outline-none focus:border-amber-500" />
+                    </div>
+                    <div class="bg-slate-900/90 p-2 rounded-xl border border-slate-800">
+                        <label class="block text-[9px] text-indigo-400 font-bold uppercase tracking-wide mb-1">🎯 Target Sale Tally</label>
+                        <input type="number" id="tally-amount" placeholder="Enter target..." oninput="calculateTotal()" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1 text-xs font-bold font-mono text-slate-100 focus:outline-none focus:border-indigo-500" />
+                    </div>
+                </div>
+
+                <div id="tally-status-box" class="hidden text-xs font-bold p-2 rounded-lg text-center border">
+                    <span id="tally-status-text"></span>
+                </div>
+
+                <p id="total-words" class="text-xs text-slate-400 font-medium italic line-clamp-1 border-t border-slate-800/40 pt-2">Zero Rupees Only</p>
+                
+                <div class="pt-1 border-t border-slate-800/40 flex justify-between items-center text-xs text-slate-400 font-semibold">
+                    <div>Total Notes: <span id="total-notes-count" class="text-slate-200 font-bold">0</span></div>
+                    <div class="text-right text-[11px]">
+                        <span id="live-datetime" class="text-slate-300 font-mono">Loading Date/Time...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="p-4 max-w-md mx-auto w-full pb-36 h-auto overflow-visible">
+        
+        <div id="developer-welcome-card" class="bg-gradient-to-r from-slate-900 via-indigo-950/20 to-slate-900 border border-slate-800 rounded-2xl p-4 mb-4 flex items-center justify-between shadow-lg relative overflow-hidden transition-all duration-300">
+            <div class="absolute -right-6 -bottom-6 w-24 h-24 bg-indigo-500/5 rounded-full blur-xl pointer-events-none"></div>
+            <div class="flex items-center gap-3.5 z-10">
+                <div class="w-11 h-11 bg-slate-950 rounded-xl border border-slate-700/60 flex items-center justify-center shadow-md relative">
+                    <span class="text-xl">🧮</span>
+                    <div class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-emerald-500 rounded-full animate-ping"></div>
+                    <div class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-emerald-500 rounded-full"></div>
+                </div>
+                <div>
+                    <h3 class="text-xs font-black tracking-wide text-slate-200 uppercase">Till Calculator Pro</h3>
+                    <p class="text-[11px] font-semibold text-slate-400 mt-0.5">Developer: <span class="text-indigo-400">Ajey Rana</span></p>
+                </div>
+            </div>
+            <a href="https://t.me/devajey" target="_blank" class="z-10 bg-sky-600 hover:bg-sky-700 active:scale-95 text-white text-[11px] font-bold px-3.5 py-2 rounded-xl border border-sky-500/30 flex items-center gap-1.5 shadow-md shadow-sky-600/10 transition-all">
+                <span>✈️</span> Join Telegram
+            </a>
+        </div>
+
+        <div id="counter-screen" class="space-y-4 h-auto overflow-visible">
+            
+            <div class="shadow-md">
+                <button onclick="shareWhatsApp()" class="w-full flex items-center justify-center gap-3 py-3.5 bg-emerald-600 active:bg-emerald-700 text-white font-bold border border-emerald-500 rounded-xl transition-all shadow-lg active:scale-98">
+                    <span class="text-xl">💬</span>
+                    <span class="text-sm tracking-wide">Share Report via WhatsApp</span>
+                </button>
+            </div>
+
+            <div class="space-y-2.5 h-auto overflow-visible">
+                <div id="row-500" class="flex items-center justify-between bg-slate-900 border border-slate-800 p-2.5 rounded-xl opacity-60 transition-all">
+                    <span class="w-14 h-8 bg-emerald-950/40 text-emerald-400 border border-emerald-500/20 text-xs font-bold rounded-lg flex items-center justify-center">₹500</span>
+                    <div class="flex items-center space-x-1">
+                        <button onclick="stepNote(500, -1)" class="w-8 h-8 bg-slate-800 rounded-lg flex items-center justify-center font-bold text-slate-400 active:bg-slate-700">-</button>
+                        <input type="number" id="note-500" placeholder="0" oninput="calculateTotal()" class="w-16 bg-slate-950 border border-slate-700 rounded-lg py-1 text-center font-bold text-slate-100 focus:outline-none focus:border-emerald-500" />
+                        <button onclick="stepNote(500, 1)" class="w-8 h-8 bg-slate-800 rounded-lg flex items-center justify-center font-bold text-slate-400 active:bg-slate-700">+</button>
+                    </div>
+                    <div class="text-right w-24 font-mono font-bold text-slate-400" id="total-500">₹0</div>
+                </div>
+                <div id="row-200" class="flex items-center justify-between bg-slate-900 border border-slate-800 p-2.5 rounded-xl opacity-60 transition-all">
+                    <span class="w-14 h-8 bg-amber-950/40 text-amber-400 border border-amber-500/20 text-xs font-bold rounded-lg flex items-center justify-center">₹200</span>
+                    <div class="flex items-center space-x-1">
+                        <button onclick="stepNote(200, -1)" class="w-8 h-8 bg-slate-800 rounded-lg flex items-center justify-center font-bold text-slate-400 active:bg-slate-700">-</button>
+                        <input type="number" id="note-200" placeholder="0" oninput="calculateTotal()" class="w-16 bg-slate-950 border border-amber-500 rounded-lg py-1 text-center font-bold text-slate-100 focus:outline-none focus:border-amber-500" />
+                        <button onclick="stepNote(200, 1)" class="w-8 h-8 bg-slate-800 rounded-lg flex items-center justify-center font-bold text-slate-400 active:bg-slate-700">+</button>
+                    </div>
+                    <div class="text-right w-24 font-mono font-bold text-slate-400" id="total-200">₹0</div>
+                </div>
+                <div id="row-100" class="flex items-center justify-between bg-slate-900 border border-slate-800 p-2.5 rounded-xl opacity-60 transition-all">
+                    <span class="w-14 h-8 bg-indigo-950/40 text-indigo-400 border border-indigo-500/20 text-xs font-bold rounded-lg flex items-center justify-center">₹100</span>
+                    <div class="flex items-center space-x-1">
+                        <button onclick="stepNote(100, -1)" class="w-8 h-8 bg-slate-800 rounded-lg flex items-center justify-center font-bold text-slate-400 active:bg-slate-700">-</button>
+                        <input type="number" id="note-100" placeholder="0" oninput="calculateTotal()" class="w-16 bg-slate-950 border border-indigo-500 rounded-lg py-1 text-center font-bold text-slate-100 focus:outline-none focus:border-indigo-500" />
+                        <button onclick="stepNote(100, 1)" class="w-8 h-8 bg-slate-800 rounded-lg flex items-center justify-center font-bold text-slate-400 active:bg-slate-700">+</button>
+                    </div>
+                    <div class="text-right w-24 font-mono font-bold text-slate-400" id="total-100">₹0</div>
+                </div>
+                <div id="row-50" class="flex items-center justify-between bg-slate-900 border border-slate-800 p-2.5 rounded-xl opacity-60 transition-all">
+                    <span class="w-14 h-8 bg-cyan-950/40 text-cyan-400 border border-cyan-500/20 text-xs font-bold rounded-lg flex items-center justify-center">₹50</span>
+                    <div class="flex items-center space-x-1">
+                        <button onclick="stepNote(50, -1)" class="w-8 h-8 bg-slate-800 rounded-lg flex items-center justify-center font-bold text-slate-400 active:bg-slate-700">-</button>
+                        <input type="number" id="note-50" placeholder="0" oninput="calculateTotal()" class="w-16 bg-slate-950 border border-cyan-500 rounded-lg py-1 text-center font-bold text-slate-100 focus:outline-none focus:border-cyan-500" />
+                        <button onclick="stepNote(50, 1)" class="w-8 h-8 bg-slate-800 rounded-lg flex items-center justify-center font-bold text-slate-400 active:bg-slate-700">+</button>
+                    </div>
+                    <div class="text-right w-24 font-mono font-bold text-slate-400" id="total-50">₹0</div>
+                </div>
+                <div id="row-20" class="flex items-center justify-between bg-slate-900 border border-slate-800 p-2.5 rounded-xl opacity-60 transition-all">
+                    <span class="w-14 h-8 bg-yellow-950/40 text-yellow-400 border border-yellow-500/20 text-xs font-bold rounded-lg flex items-center justify-center">₹20</span>
+                    <div class="flex items-center space-x-1">
+                        <button onclick="stepNote(20, -1)" class="w-8 h-8 bg-slate-800 rounded-lg flex items-center justify-center font-bold text-slate-400 active:bg-slate-700">-</button>
+                        <input type="number" id="note-20" placeholder="0" oninput="calculateTotal()" class="w-16 bg-slate-950 border border-yellow-500 rounded-lg py-1 text-center font-bold text-slate-100 focus:outline-none focus:border-yellow-500" />
+                        <button onclick="stepNote(20, 1)" class="w-8 h-8 bg-slate-800 rounded-lg flex items-center justify-center font-bold text-slate-400 active:bg-slate-700">+</button>
+                    </div>
+                    <div class="text-right w-24 font-mono font-bold text-slate-400" id="total-20">₹0</div>
+                </div>
+                <div id="row-10" class="flex items-center justify-between bg-slate-900 border border-slate-800 p-2.5 rounded-xl opacity-60 transition-all">
+                    <span class="w-14 h-8 bg-orange-950/40 text-orange-400 border border-orange-500/20 text-xs font-bold rounded-lg flex items-center justify-center">₹10</span>
+                    <div class="flex items-center space-x-1">
+                        <button onclick="stepNote(10, -1)" class="w-8 h-8 bg-slate-800 rounded-lg flex items-center justify-center font-bold text-slate-400 active:bg-slate-700">-</button>
+                        <input type="number" id="note-10" placeholder="0" oninput="calculateTotal()" class="w-16 bg-slate-950 border border-orange-500 rounded-lg py-1 text-center font-bold text-slate-100 focus:outline-none focus:border-orange-500" />
+                        <button onclick="stepNote(10, 1)" class="w-8 h-8 bg-slate-800 rounded-lg flex items-center justify-center font-bold text-slate-400 active:bg-slate-700">+</button>
+                    </div>
+                    <div class="text-right w-24 font-mono font-bold text-slate-400" id="total-10">₹0</div>
+                </div>
+                <div id="row-5" class="flex items-center justify-between bg-slate-900 border border-slate-800 p-2.5 rounded-xl opacity-60 transition-all">
+                    <span class="w-14 h-8 bg-teal-950/40 text-teal-400 border border-teal-500/20 text-xs font-bold rounded-lg flex items-center justify-center">₹5</span>
+                    <div class="flex items-center space-x-1">
+                        <button onclick="stepNote(5, -1)" class="w-8 h-8 bg-slate-800 rounded-lg flex items-center justify-center font-bold text-slate-400 active:bg-slate-700">-</button>
+                        <input type="number" id="note-5" placeholder="0" oninput="calculateTotal()" class="w-16 bg-slate-950 border border-teal-500 rounded-lg py-1 text-center font-bold text-slate-100 focus:outline-none focus:border-teal-500" />
+                        <button onclick="stepNote(5, 1)" class="w-8 h-8 bg-slate-800 rounded-lg flex items-center justify-center font-bold text-slate-400 active:bg-slate-700">+</button>
+                    </div>
+                    <div class="text-right w-24 font-mono font-bold text-slate-400" id="total-5">₹0</div>
+                </div>
+                <div id="row-2" class="flex items-center justify-between bg-slate-900 border border-slate-800 p-2.5 rounded-xl opacity-60 transition-all">
+                    <span class="w-14 h-8 bg-rose-950/40 text-rose-400 border border-rose-500/20 text-xs font-bold rounded-lg flex items-center justify-center">₹2</span>
+                    <div class="flex items-center space-x-1">
+                        <button onclick="stepNote(2, -1)" class="w-8 h-8 bg-slate-800 rounded-lg flex items-center justify-center font-bold text-slate-400 active:bg-slate-700">-</button>
+                        <input type="number" id="note-2" placeholder="0" oninput="calculateTotal()" class="w-16 bg-slate-950 border border-rose-500 rounded-lg py-1 text-center font-bold text-slate-100 focus:outline-none focus:border-rose-500" />
+                        <button onclick="stepNote(2, 1)" class="w-8 h-8 bg-slate-800 rounded-lg flex items-center justify-center font-bold text-slate-400 active:bg-slate-700">+</button>
+                    </div>
+                    <div class="text-right w-24 font-mono font-bold text-slate-400" id="total-2">₹0</div>
+                </div>
+                <div id="row-1" class="flex items-center justify-between bg-slate-900 border border-slate-800 p-2.5 rounded-xl opacity-60 transition-all">
+                    <span class="w-14 h-8 bg-stone-950/40 text-stone-400 border border-stone-500/20 text-xs font-bold rounded-lg flex items-center justify-center">₹1</span>
+                    <div class="flex items-center space-x-1">
+                        <button onclick="stepNote(1, -1)" class="w-8 h-8 bg-slate-800 rounded-lg flex items-center justify-center font-bold text-slate-400 active:bg-slate-700">-</button>
+                        <input type="number" id="note-1" placeholder="0" oninput="calculateTotal()" class="w-16 bg-slate-950 border border-stone-500 rounded-lg py-1 text-center font-bold text-slate-100 focus:outline-none focus:border-stone-500" />
+                        <button onclick="stepNote(1, 1)" class="w-8 h-8 bg-slate-800 rounded-lg flex items-center justify-center font-bold text-slate-400 active:bg-slate-700">+</button>
+                    </div>
+                    <div class="text-right w-24 font-mono font-bold text-slate-400" id="total-1">₹0</div>
+                </div>
+            </div>
+
+            <div id="adjustment-card" class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-lg space-y-3">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">➕ Manual Adjustments</h3>
+                    <span class="text-[10px] bg-slate-800 text-slate-300 font-semibold px-2 py-0.5 rounded">Change / Loose Extra</span>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[10px] text-emerald-400 font-bold mb-1">ADD (+)</label>
+                        <input type="number" id="manual-add" placeholder="0" oninput="calculateTotal()" onclick="openRemarkModal('ADD')" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 font-mono font-bold text-emerald-400 focus:outline-none focus:border-emerald-500" readonly />
+                    </div>
+                    <div>
+                        <label class="block text-[10px] text-rose-400 font-bold mb-1">SUBTRACT (-)</label>
+                        <input type="number" id="manual-sub" placeholder="0" oninput="calculateTotal()" onclick="openRemarkModal('SUB')" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 font-mono font-bold text-rose-400 focus:outline-none focus:border-rose-500" readonly />
+                    </div>
+                </div>
+                <div id="remarks-summary-view" class="hidden text-[11px] text-slate-400 bg-slate-950/60 p-2 rounded-lg italic"></div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+                <button onclick="saveTx('IN')" class="bg-emerald-600 active:bg-emerald-700 text-white font-bold py-3.5 rounded-xl shadow-lg border border-emerald-500 transition-transform active:scale-98">
+                    📥 Save Cash In
+                </button>
+                <button onclick="saveTx('OUT')" class="bg-rose-600 active:bg-rose-700 text-white font-bold py-3.5 rounded-xl shadow-lg border border-rose-500 transition-transform active:scale-98">
+                    📤 Save Cash Out
+                </button>
+            </div>
+        </div>
+
+        <div id="calculator-screen" class="hidden space-y-4">
+            <div class="bg-gradient-to-br from-slate-900 to-slate-950 border border-slate-800 rounded-2xl p-5 shadow-2xl space-y-2">
+                <div class="text-right text-slate-500 text-sm font-mono tracking-wide h-6" id="calc-history-string"></div>
+                <div class="text-right text-3xl font-black font-mono text-slate-100 tracking-tight overflow-x-auto select-all" id="calc-main-display">0</div>
+                
+                <div id="calc-gst-summary" class="hidden grid grid-cols-2 gap-y-1.5 pt-3 border-t border-slate-800/60 text-xs font-medium font-mono text-slate-400">
+                    <div>Base Price:</div><div class="text-right text-slate-200" id="gst-base-val">₹0</div>
+                    <div>Tax Amount:</div><div class="text-right text-indigo-400" id="gst-tax-val">₹0</div>
+                    <div class="font-bold text-slate-300">Final Price:</div><div class="text-right font-bold text-emerald-400" id="gst-final-val">₹0</div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-5 gap-1.5 text-center text-[10px] font-bold tracking-wider">
+                <div class="bg-emerald-950/40 text-emerald-400 border border-emerald-500/20 py-2 rounded-lg select-none">GST+</div>
+                <button onclick="pressGst(5, true)" class="bg-slate-900 border border-slate-800 text-emerald-400 font-mono py-2 rounded-lg active:bg-slate-800">+5%</button>
+                <button onclick="pressGst(12, true)" class="bg-slate-900 border border-slate-800 text-emerald-400 font-mono py-2 rounded-lg active:bg-slate-800">+12%</button>
+                <button onclick="pressGst(18, true)" class="bg-slate-900 border border-slate-800 text-emerald-400 font-mono py-2 rounded-lg active:bg-slate-800">+18%</button>
+                <button onclick="pressGst(28, true)" class="bg-slate-900 border border-slate-800 text-emerald-400 font-mono py-2 rounded-lg active:bg-slate-800">+28%</button>
+
+                <div class="bg-rose-950/40 text-rose-400 border border-rose-500/20 py-2 rounded-lg select-none">GST-</div>
+                <button onclick="pressGst(5, false)" class="bg-slate-900 border border-slate-800 text-rose-400 font-mono py-2 rounded-lg active:bg-slate-800">-5%</button>
+                <button onclick="pressGst(12, false)" class="bg-slate-900 border border-slate-800 text-rose-400 font-mono py-2 rounded-lg active:bg-slate-800">-12%</button>
+                <button onclick="pressGst(18, false)" class="bg-slate-900 border border-slate-800 text-rose-400 font-mono py-2 rounded-lg active:bg-slate-800">-18%</button>
+                <button onclick="pressGst(28, false)" class="bg-slate-900 border border-slate-800 text-rose-400 font-mono py-2 rounded-lg active:bg-slate-800">-28%</button>
+            </div>
+
+            <div class="grid grid-cols-4 gap-2 font-mono font-bold text-lg select-none text-slate-100">
+                <button onclick="pressCalc('AC')" class="bg-slate-800 text-rose-400 p-4 rounded-xl active:bg-slate-700 shadow-md">AC</button>
+                <button onclick="pressCalc('C')" class="bg-slate-800 text-amber-400 p-4 rounded-xl active:bg-slate-700 shadow-md">C</button>
+                <button onclick="pressCalc('%')" class="bg-slate-900 border border-slate-800 p-4 rounded-xl active:bg-slate-800 shadow-md">%</button>
+                <button onclick="pressCalc('/')" class="bg-indigo-950/40 text-indigo-400 border border-indigo-500/10 p-4 rounded-xl active:bg-indigo-900/30 shadow-md">/</button>
+
+                <button onclick="pressCalc('7')" class="bg-slate-900 border border-slate-800 p-4 rounded-xl active:bg-slate-800 shadow-md">7</button>
+                <button onclick="pressCalc('8')" class="bg-slate-900 border border-slate-800 p-4 rounded-xl active:bg-slate-800 shadow-md">8</button>
+                <button onclick="pressCalc('9')" class="bg-slate-900 border border-slate-800 p-4 rounded-xl active:bg-slate-800 shadow-md">9</button>
+                <button onclick="pressCalc('*')" class="bg-indigo-950/40 text-indigo-400 border border-indigo-500/10 p-4 rounded-xl active:bg-indigo-900/30 shadow-md">×</button>
+
+                <button onclick="pressCalc('4')" class="bg-slate-900 border border-slate-800 p-4 rounded-xl active:bg-slate-800 shadow-md">4</button>
+                <button onclick="pressCalc('5')" class="bg-slate-900 border border-slate-800 p-4 rounded-xl active:bg-slate-800 shadow-md">5</button>
+                <button onclick="pressCalc('6')" class="bg-slate-900 border border-slate-800 p-4 rounded-xl active:bg-slate-800 shadow-md">6</button>
+                <button onclick="pressCalc('-')" class="bg-indigo-950/40 text-indigo-400 border border-indigo-500/10 p-4 rounded-xl active:bg-indigo-900/30 shadow-md">-</button>
+
+                <button onclick="pressCalc('1')" class="bg-slate-900 border border-slate-800 p-4 rounded-xl active:bg-slate-800 shadow-md">1</button>
+                <button onclick="pressCalc('2')" class="bg-slate-900 border border-slate-800 p-4 rounded-xl active:bg-slate-800 shadow-md">2</button>
+                <button onclick="pressCalc('3')" class="bg-slate-900 border border-slate-800 p-4 rounded-xl active:bg-slate-800 shadow-md">3</button>
+                <button onclick="pressCalc('+')" class="bg-indigo-950/40 text-indigo-400 border border-indigo-500/10 p-4 rounded-xl active:bg-indigo-900/30 shadow-md">+</button>
+
+                <button onclick="pressCalc('0')" class="bg-slate-900 border border-slate-800 p-4 rounded-xl active:bg-slate-800 shadow-md">0</button>
+                <button onclick="pressCalc('00')" class="bg-slate-900 border border-slate-800 p-4 rounded-xl active:bg-slate-800 shadow-md">00</button>
+                <button onclick="pressCalc('.')" class="bg-slate-900 border border-slate-800 p-4 rounded-xl active:bg-slate-800 shadow-md">.</button>
+                <button onclick="pressCalc('=')" class="bg-sky-600 text-white p-4 rounded-xl active:bg-sky-700 shadow-lg shadow-sky-600/20 text-xl">=</button>
+            </div>
+
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3 shadow-lg">
+                <div class="space-y-1">
+                    <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest block">🔤 Value in Indian Words</span>
+                    <div id="calc-words-badge" class="bg-slate-950/80 p-2.5 rounded-xl border border-slate-800 text-xs font-semibold text-indigo-300 italic min-h-[34px]">Zero Rupees Only</div>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-2 pt-1">
+                    <button onclick="shuntToCounter('ADD')" class="bg-emerald-950/60 hover:bg-emerald-900/40 text-emerald-400 border border-emerald-500/20 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 active:scale-95">
+                        📥 Send to Add (+)
+                    </button>
+                    <button onclick="shuntToCounter('SUB')" class="bg-rose-950/60 hover:bg-rose-900/40 text-rose-400 border border-rose-500/20 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 active:scale-95">
+                        📤 Send to Sub (-)
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div id="diary-screen" class="hidden space-y-3">
+            <h2 class="text-lg font-black text-slate-300">Transaction Logs</h2>
+            <div id="logs-container" class="space-y-3"></div>
+        </div>
+    </main>
+
+    <div id="changelog-splash-modal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-[200] hidden items-center justify-center p-4">
+        <div class="bg-gradient-to-br from-slate-900 via-slate-900 to-indigo-950/40 border border-slate-800 rounded-3xl p-6 w-full max-w-sm space-y-5 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+            
+            <div class="text-center space-y-1">
+                <div class="w-14 h-11 bg-indigo-600/10 border border-indigo-500/20 rounded-2xl mx-auto flex items-center justify-center text-xl shadow-inner">🚀</div>
+                <h2 class="text-base font-black tracking-wide text-slate-100 uppercase pt-2">System Updated!</h2>
+                <div class="inline-block bg-indigo-950 border border-indigo-500/30 text-indigo-400 font-mono font-bold text-[10px] px-2.5 py-0.5 rounded-full mt-1">
+                    v<span id="splash-version-name">2.1.0</span> (Code #<span id="splash-version-code">3</span>)
+                </div>
+            </div>
+
+            <div class="bg-slate-950/60 border border-slate-900 rounded-2xl p-4 space-y-3 text-xs text-slate-300 max-h-60 overflow-y-auto no-scrollbar">
+                <div class="space-y-1.5">
+                    <h4 class="text-[10px] font-bold uppercase tracking-wider text-emerald-400">🔥 What's New & Added:</h4>
+                    <p class="pl-2 border-l border-emerald-500/30 text-slate-400">Added auto-conversion of totals into spoken text/words on both screens.</p>
+                    <p class="pl-2 border-l border-emerald-500/30 text-slate-400">Added seamless data Shunting from GST Calc right back into Counter.</p>
+                </div>
+                <div class="space-y-1.5 pt-1">
+                    <h4 class="text-[10px] font-bold uppercase tracking-wider text-amber-400">🔧 Adjustments & Fixes:</h4>
+                    <p class="pl-2 border-l border-amber-500/30 text-slate-400">Updated GST+ 4% slot up to the standard 5% tax slab.</p>
+                    <p class="pl-2 border-l border-amber-500/30 text-slate-400">Completely overhauled orientation bugs for stable full-page scrolling mechanics.</p>
+                </div>
+            </div>
+
+            <button onclick="dismissChangelogSplash()" class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-indigo-600/20 text-xs tracking-wider uppercase transition-all active:scale-98">
+                Got It, Let's Go!
+            </button>
+        </div>
+    </div>
+
+    <div id="remark-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-[100] hidden items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 w-full max-w-sm space-y-4 shadow-2xl">
+            <h3 class="text-sm font-bold uppercase tracking-wider text-slate-300">✍️ <span id="modal-title-type">Adjustment</span> Details</h3>
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-xs text-slate-400 font-semibold mb-1">Amount (₹)</label>
+                    <input type="number" id="modal-remark-amount" placeholder="Enter value..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 font-mono font-bold text-slate-100 focus:outline-none focus:border-indigo-500" />
+                </div>
+                <div>
+                    <label class="block text-xs text-slate-400 font-semibold mb-1">Add Note / Reason</label>
+                    <textarea id="modal-remark-text" placeholder="Reason for adjustment..." class="w-full h-20 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500 resize-none"></textarea>
+                </div>
+            </div>
+            <div class="grid grid-cols-2 gap-3 pt-1">
+                <button onclick="closeRemarkModal()" class="py-2 text-xs font-bold bg-slate-800 text-slate-400 rounded-xl border border-slate-700">Cancel</button>
+                <button onclick="applyRemarkModal()" class="py-2 text-xs font-bold bg-indigo-600 text-white rounded-xl shadow-md shadow-indigo-600/20">Apply</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="detail-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-[100] hidden items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 w-full max-w-sm max-h-[85vh] flex flex-col shadow-2xl">
+            <h3 class="text-sm font-bold uppercase tracking-wider text-slate-300 pb-3 border-b border-slate-800">📝 Audit Summary Details</h3>
+            <div id="detail-modal-body" class="flex-1 overflow-y-auto no-scrollbar py-4 space-y-3 text-xs text-slate-300"></div>
+            <button onclick="document.getElementById('detail-modal').classList.add('hidden')" class="w-full py-2.5 bg-slate-800 text-slate-300 font-bold rounded-xl border border-slate-700 text-xs">Close Summary</button>
+        </div>
+    </div>
+
+    <nav class="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-md border-t border-slate-800 grid grid-cols-3 p-2 shadow-2xl z-50 max-w-md mx-auto rounded-t-2xl">
+        <button id="btn-nav-counter" onclick="switchTab('counter')" class="flex flex-col items-center justify-center py-2 rounded-xl text-emerald-400 font-bold bg-slate-950/40">
+            <span class="text-lg">🧮</span>
+            <span class="text-[10px] mt-0.5">Counter</span>
+        </button>
+        <button id="btn-nav-calc" onclick="switchTab('calculator')" class="flex flex-col items-center justify-center py-2 rounded-xl text-slate-400 font-semibold hover:text-slate-200">
+            <span class="text-lg">🧮</span>
+            <span class="text-[10px] mt-0.5">GST Calc</span>
+        </button>
+        <button id="btn-nav-diary" onclick="switchTab('diary')" class="flex flex-col items-center justify-center py-2 rounded-xl text-slate-400 font-semibold hover:text-slate-200">
+            <span class="text-lg">📑</span>
+            <span class="text-[10px] mt-0.5">Diary Logs</span>
+        </button>
+    </nav>
+
+    <script>
+        // --- MASTER VERSION METADATA CONTROLLED BY DEVELOPER ---
+        const CURRENT_VERSION_CODE = 3; 
+        const CURRENT_VERSION_NAME = "2.1.0";
+
+        const notes = [500, 200, 100, 50, 20, 10, 5, 2, 1];
+        let currentGrandTotal = 0;
+        let currentNetSale = 0;
+        
+        let activeRemarkType = "";
+        let manualAddRemark = "";
+        let manualSubRemark = "";
+
+        let calcDisplayValue = "0";
+        let calcResetOnNextKey = false;
+
+        function runLiveClock() {
+            const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            const d = new Date();
+            const dateStr = `${days[d.getDay()]}, ${d.getMonth() + 1}/${d.getDate()}/${d.getFullYear()}`;
+            let hours = d.getHours();
+            let minutes = d.getMinutes();
+            let seconds = d.getSeconds();
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            
+            hours = hours % 12;
+            hours = hours ? hours : 12; 
+            minutes = minutes < 10 ? '0'+minutes : minutes;
+            seconds = seconds < 10 ? '0'+seconds : seconds;
+            
+            document.getElementById('live-datetime').innerHTML = `${dateStr} • <span class="text-emerald-400 font-bold">${hours}:${minutes}:${seconds} ${ampm}</span>`;
+        }
+        setInterval(runLiveClock, 1000);
+        runLiveClock();
+
+        window.addEventListener('DOMContentLoaded', () => {
+            loadActiveAppState();
+            checkAndShowChangelogSplash(); // Check update status upon load sequence triggers
+            window.addEventListener('click', () => {
+                document.querySelectorAll('.log-dropdown').forEach(el => el.classList.add('hidden'));
+            });
+        });
+
+        // --- NEW ONE-TIME CHANGELOG ENGINE LOGIC SYSTEM ---
+        function checkAndShowChangelogSplash() {
+            const lastSeenCode = localStorage.getItem('till_pro_version_checkpoint');
+            if (!lastSeenCode || parseInt(lastSeenCode) < CURRENT_VERSION_CODE) {
+                document.getElementById('splash-version-name').innerText = CURRENT_VERSION_NAME;
+                document.getElementById('splash-version-code').innerText = CURRENT_VERSION_CODE;
+                
+                const splash = document.getElementById('changelog-splash-modal');
+                splash.classList.remove('hidden');
+                splash.classList.add('flex');
+            }
+        }
+
+        function dismissChangelogSplash() {
+            localStorage.setItem('till_pro_version_checkpoint', CURRENT_VERSION_CODE);
+            document.getElementById('changelog-splash-modal').classList.add('hidden');
+            document.getElementById('changelog-splash-modal').classList.remove('flex');
+        }
+
+        function calculateTotal() {
+            let notesTotal = 0;
+            let notesCount = 0;
+
+            notes.forEach(value => {
+                const input = document.getElementById(`note-${value}`);
+                const row = document.getElementById(`row-${value}`);
+                const display = document.getElementById(`total-${value}`);
+                
+                let count = parseInt(input.value) || 0;
+                if (count < 0) { count = 0; input.value = 0; }
+
+                const rowTotal = count * value;
+                notesTotal += rowTotal;
+                notesCount += count;
+
+                if (count > 0) {
+                    row.classList.remove('opacity-60', 'border-slate-800');
+                    row.classList.add('opacity-100', 'border-slate-700', 'bg-slate-900/40');
+                    display.classList.add('text-emerald-400');
+                    display.classList.remove('text-slate-400');
+                    display.innerText = `₹ ${rowTotal.toLocaleString()}`;
+                } else {
+                    row.classList.add('opacity-60', 'border-slate-800');
+                    row.classList.remove('opacity-100', 'border-slate-700', 'bg-slate-900/40');
+                    display.classList.remove('text-emerald-400');
+                    display.classList.add('text-slate-400');
+                    display.innerText = `₹0`;
+                }
+            });
+
+            const manualAdd = parseInt(document.getElementById('manual-add').value) || 0;
+            const manualSub = parseInt(document.getElementById('manual-sub').value) || 0;
+            const floatCash = parseInt(document.getElementById('float-amount').value) || 0;
+
+            let absoluteTotal = notesTotal + manualAdd - manualSub;
+            if (absoluteTotal < 0) absoluteTotal = 0; 
+
+            let netSale = absoluteTotal - floatCash;
+
+            currentGrandTotal = absoluteTotal;
+            currentNetSale = netSale;
+
+            document.getElementById('grand-total').innerText = absoluteTotal.toLocaleString();
+            document.getElementById('net-sale-total').innerText = netSale.toLocaleString();
+            document.getElementById('total-notes-count').innerText = notesCount;
+            document.getElementById('total-words').innerText = numberToWords(absoluteTotal) + " Rupees Only";
+
+            handleTallyMatching(netSale);
+            saveActiveAppState();
+        }
+
+        function openRemarkModal(type) {
+            activeRemarkType = type;
+            document.getElementById('modal-title-type').innerText = type === 'ADD' ? 'Addition (+)' : 'Subtraction (-)';
+            
+            const existingVal = document.getElementById(type === 'ADD' ? 'manual-add' : 'manual-sub').value;
+            const existingText = type === 'ADD' ? manualAddRemark : manualSubRemark;
+            
+            document.getElementById('modal-remark-amount').value = existingVal || '';
+            document.getElementById('modal-remark-text').value = existingText || '';
+            
+            document.getElementById('remark-modal').classList.remove('hidden');
+            document.getElementById('remark-modal').classList.add('flex');
+        }
+
+        function closeRemarkModal() {
+            document.getElementById('remark-modal').classList.add('hidden');
+            document.getElementById('remark-modal').classList.remove('flex');
+        }
+
+        function applyRemarkModal() {
+            const val = document.getElementById('modal-remark-amount').value;
+            const txt = document.getElementById('modal-remark-text').value;
+            
+            if (activeRemarkType === 'ADD') {
+                document.getElementById('manual-add').value = val;
+                manualAddRemark = txt;
+            } else {
+                document.getElementById('manual-sub').value = val;
+                manualSubRemark = txt;
+            }
+            
+            updateRemarksSummaryDisplay();
+            closeRemarkModal();
+            calculateTotal();
+        }
+
+        function updateRemarksSummaryDisplay() {
+            const container = document.getElementById('remarks-summary-view');
+            let textOutput = "";
+            if(manualAddRemark) textOutput += `<strong>[+] Note:</strong> ${manualAddRemark} `;
+            if(manualSubRemark) textOutput += `<strong>[-] Note:</strong> ${manualSubRemark}`;
+            
+            if(textOutput) {
+                container.innerHTML = textOutput;
+                container.classList.remove('hidden');
+            } else {
+                container.classList.add('hidden');
+            }
+        }
+
+        function saveActiveAppState() {
+            const state = {
+                manualAdd: document.getElementById('manual-add').value,
+                manualSub: document.getElementById('manual-sub').value,
+                manualAddRemark: manualAddRemark,
+                manualSubRemark: manualSubRemark,
+                floatAmount: document.getElementById('float-amount').value,
+                tallyAmount: document.getElementById('tally-amount').value,
+                counts: {}
+            };
+            notes.forEach(v => { state.counts[v] = document.getElementById(`note-${v}`).value; });
+            localStorage.setItem('hopweb_active_state', JSON.stringify(state));
+        }
+
+        function loadActiveAppState() {
+            const saved = localStorage.getItem('hopweb_active_state');
+            if (!saved) return;
+            try {
+                const state = JSON.parse(saved);
+                document.getElementById('manual-add').value = state.manualAdd || '';
+                document.getElementById('manual-sub').value = state.manualSub || '';
+                manualAddRemark = state.manualAddRemark || '';
+                manualSubRemark = state.manualSubRemark || '';
+                document.getElementById('float-amount').value = state.floatAmount || '';
+                document.getElementById('tally-amount').value = state.tallyAmount || '';
+                notes.forEach(v => { document.getElementById(`note-${v}`).value = state.counts[v] || ''; });
+                updateRemarksSummaryDisplay();
+                calculateTotal();
+            } catch (e) { console.error(e); }
+        }
+
+        function handleTallyMatching(netSaleTotal) {
+            const tallyInput = document.getElementById('tally-amount').value;
+            const statusBox = document.getElementById('tally-status-box');
+            const statusText = document.getElementById('tally-status-text');
+
+            if (!tallyInput) {
+                statusBox.classList.add('hidden');
+                return;
+            }
+
+            const tallyTarget = parseInt(tallyInput) || 0;
+            statusBox.classList.remove('hidden');
+
+            if (netSaleTotal === tallyTarget) {
+                statusBox.className = "text-xs font-bold p-2 rounded-xl text-center border bg-emerald-950/50 text-emerald-400 border-emerald-500/30 w-full";
+                statusText.innerText = "🎉 Net Sale Matches Target Perfectly!";
+            } else if (netSaleTotal < tallyTarget) {
+                const diff = tallyTarget - netSaleTotal;
+                statusBox.className = "text-xs font-bold p-2 rounded-xl text-center border bg-amber-950/50 text-amber-400 border-amber-500/30 w-full";
+                statusText.innerText = `⚠️ Sale Short by: -₹${diff.toLocaleString()}`;
+            } else {
+                const diff = netSaleTotal - tallyTarget;
+                statusBox.className = "text-xs font-bold p-2 rounded-xl text-center border bg-blue-950/50 text-blue-400 border-blue-500/30 w-full";
+                statusText.innerText = `💥 Sale Surplus Extra: +₹${diff.toLocaleString()}`;
+            }
+        }
+
+        function updateCalcWordsOutput(num) {
+            const target = document.getElementById('calc-words-badge');
+            if (!target) return;
+            let plainNumericVal = Math.floor(Math.abs(num));
+            target.innerText = numberToWords(plainNumericVal) + " Rupees Only";
+        }
+
+        function pressCalc(key) {
+            const display = document.getElementById('calc-main-display');
+            const history = document.getElementById('calc-history-string');
+            const summary = document.getElementById('calc-gst-summary');
+
+            if (key === 'AC') {
+                calcDisplayValue = "0";
+                history.innerText = "";
+                summary.classList.add('hidden');
+            } else if (key === 'C') {
+                calcDisplayValue = calcDisplayValue.slice(0, -1);
+                if (calcDisplayValue === "" || calcDisplayValue === "-") calcDisplayValue = "0";
+            } else if (key === '=') {
+                try {
+                    let sanitisedExp = calcDisplayValue.replace(/×/g, '*').replace(/÷/g, '/');
+                    let evaluatedResult = eval(sanitisedExp);
+                    history.innerText = calcDisplayValue + " =";
+                    calcDisplayValue = String(Number(evaluatedResult.toFixed(4)));
+                    calcResetOnNextKey = true;
+                } catch (e) {
+                    calcDisplayValue = "Error";
+                    calcResetOnNextKey = true;
+                }
+            } else if (['+', '-', '*', '/', '%'].includes(key)) {
+                calcResetOnNextKey = false;
+                const lastChar = calcDisplayValue.slice(-1);
+                if (['+', '-', '*', '/'].includes(lastChar)) {
+                    calcDisplayValue = calcDisplayValue.slice(0, -1) + key;
+                } else {
+                    calcDisplayValue += key;
+                }
+            } else {
+                if (calcDisplayValue === "0" || calcResetOnNextKey) {
+                    calcDisplayValue = key;
+                    calcResetOnNextKey = false;
+                } else {
+                    calcDisplayValue += key;
+                }
+            }
+            display.innerText = calcDisplayValue;
+            updateCalcWordsOutput(parseFloat(calcDisplayValue) || 0);
+        }
+
+        function pressGst(rate, isPlusMode) {
+            try {
+                let sanitisedExp = calcDisplayValue.replace(/×/g, '*').replace(/÷/g, '/');
+                let currentVal = parseFloat(eval(sanitisedExp)) || 0;
+                
+                let basePrice = 0;
+                let taxAmount = 0;
+                let finalPrice = 0;
+
+                if (isPlusMode) {
+                    basePrice = currentVal;
+                    taxAmount = (currentVal * rate) / 100;
+                    finalPrice = basePrice + taxAmount;
+                } else {
+                    finalPrice = currentVal;
+                    basePrice = finalPrice / (1 + (rate / 100));
+                    taxAmount = finalPrice - basePrice;
+                }
+
+                document.getElementById('gst-base-val').innerText = `₹${basePrice.toFixed(2)}`;
+                document.getElementById('gst-tax-val').innerText = `₹${taxAmount.toFixed(2)}`;
+                document.getElementById('gst-final-val').innerText = `₹${finalPrice.toFixed(2)}`;
+                document.getElementById('calc-gst-summary').classList.remove('hidden');
+
+                document.getElementById('calc-history-string').innerText = `${currentVal} (${isPlusMode ? 'GST +' : 'GST -'}${rate}%)`;
+                calcDisplayValue = finalPrice.toFixed(2);
+                document.getElementById('calc-main-display').innerText = calcDisplayValue;
+                updateCalcWordsOutput(finalPrice);
+                calcResetOnNextKey = true;
+            } catch (err) {
+                document.getElementById('calc-main-display').innerText = "Error";
+            }
+        }
+
+        function shuntToCounter(targetType) {
+            let numericVal = Math.floor(parseFloat(calcDisplayValue)) || 0;
+            if (numericVal <= 0) {
+                alert("Please calculate or enter a valid positive value first!");
+                return;
+            }
+
+            if (targetType === 'ADD') {
+                document.getElementById('manual-add').value = numericVal;
+                manualAddRemark = "Transferred from GST Calculator Workspace";
+                document.getElementById('manual-sub').value = "";
+                manualSubRemark = "";
+            } else {
+                document.getElementById('manual-sub').value = numericVal;
+                manualSubRemark = "Transferred from GST Calculator Workspace";
+                document.getElementById('manual-add').value = "";
+                manualAddRemark = "";
+            }
+
+            updateRemarksSummaryDisplay();
+            calculateTotal();
+            alert(`Successfully shunted ₹${numericVal.toLocaleString()} into manual adjustments loop!`);
+            switchTab('counter');
+        }
+
+        function toggleLogDropdown(event, id) {
+            event.stopPropagation();
+            const targetMenu = document.getElementById(`dropdown-${id}`);
+            const stateIsHidden = targetMenu.classList.contains('hidden');
+            document.querySelectorAll('.log-dropdown').forEach(el => el.classList.add('hidden'));
+            if (stateIsHidden) targetMenu.classList.remove('hidden');
+        }
+
+        function switchTab(target) {
+            const cScreen = document.getElementById('counter-screen');
+            const calcScreen = document.getElementById('calculator-screen');
+            const dScreen = document.getElementById('diary-screen');
+            
+            const cNav = document.getElementById('btn-nav-counter');
+            const calcNav = document.getElementById('btn-nav-calc');
+            const dNav = document.getElementById('btn-nav-diary');
+            
+            const mainHeader = document.getElementById('app-main-header');
+            const devCard = document.getElementById('developer-welcome-card');
+
+            cNav.className = calcNav.className = dNav.className = "flex flex-col items-center justify-center py-2 rounded-xl text-slate-400 font-semibold";
+
+            if (target === 'counter') {
+                cScreen.classList.remove('hidden');
+                calcScreen.classList.add('hidden');
+                dScreen.classList.add('hidden');
+                if (mainHeader) mainHeader.classList.remove('hidden');
+                if (devCard) devCard.classList.remove('hidden');
+                cNav.className = "flex flex-col items-center justify-center py-2 rounded-xl text-emerald-400 font-bold bg-slate-950/40";
+            } else if (target === 'calculator') {
+                calcScreen.classList.remove('hidden');
+                cScreen.classList.add('hidden');
+                dScreen.classList.add('hidden');
+                if (mainHeader) mainHeader.classList.add('hidden');
+                if (devCard) devCard.classList.add('hidden');
+                calcNav.className = "flex flex-col items-center justify-center py-2 rounded-xl text-emerald-400 font-bold bg-slate-950/40";
+            } else {
+                dScreen.classList.remove('hidden');
+                cScreen.classList.add('hidden');
+                calcScreen.classList.add('hidden');
+                if (mainHeader) mainHeader.classList.add('hidden');
+                if (devCard) devCard.classList.add('hidden');
+                dNav.className = "flex flex-col items-center justify-center py-2 rounded-xl text-emerald-400 font-bold bg-slate-950/40";
+                renderLogs();
+            }
+        }
+
+        function executeDeleteLog(id) {
+            if(!confirm("Are you sure you want to permanently delete this entry?")) return;
+            let storageData = localStorage.getItem('hopweb_cash_app');
+            if(!storageData) return;
+            let historyArray = JSON.parse(storageData);
+            historyArray = historyArray.filter(item => item.id !== id);
+            localStorage.setItem('hopweb_cash_app', JSON.stringify(historyArray));
+            renderLogs();
+        }
+
+        function executeShowDetails(id) {
+            let storageData = localStorage.getItem('hopweb_cash_app');
+            if(!storageData) return;
+            let historyArray = JSON.parse(storageData);
+            const entry = historyArray.find(item => item.id === id);
+            if(!entry) return;
+
+            let bodyHtml = `
+                <div class="space-y-2 bg-slate-950 p-3 rounded-xl border border-slate-800 font-mono text-[11px]">
+                    <p><span class="text-slate-500">TIMESTAMP:</span> ${entry.timestamp}</p>
+                    <p><span class="text-slate-500">TYPE:</span> <span class="font-bold text-indigo-400">${entry.type}</span></p>
+                    <p><span class="text-slate-500">TOTAL NOTES:</span> ${entry.notes}</p>
+                    <p><span class="text-slate-500">FLOAT VALUE:</span> ₹${(entry.floatCash || 0).toLocaleString()}</p>
+                    <p><span class="text-slate-500">NET CASH REVENUE:</span> <span class="text-emerald-400 font-bold">₹${(entry.netSale || entry.amount).toLocaleString()}</span></p>
+                    <p><span class="text-slate-500">GROSS COUNTED CASH:</span> ₹${entry.amount.toLocaleString()}</p>
+                </div>
+                <div class="space-y-1.5">
+                    <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Note Structure Summary:</h4>
+                    <div class="grid grid-cols-2 gap-2 bg-slate-950/40 p-2.5 rounded-xl border border-slate-900">
+            `;
+
+            if(entry.breakdown) {
+                Object.entries(entry.breakdown).forEach(([noteVal, noteCount]) => {
+                    if(noteCount > 0) {
+                        bodyHtml += `<div class="font-mono text-[11px]">₹${noteVal} × ${noteCount} = ₹${(noteVal * noteCount).toLocaleString()}</div>`;
+                    }
+                });
+            }
+            bodyHtml += `</div></div>`;
+
+            if(entry.manualAdd || entry.manualSub) {
+                bodyHtml += `<div class="space-y-1 bg-slate-950/60 p-2.5 rounded-xl border border-slate-900">
+                    <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Manual Adjustment Ledger:</h4>
+                    ${entry.manualAdd ? `<p class="text-emerald-400 font-mono">[+] Added ₹${entry.manualAdd} <span class="text-slate-400 italic">(${entry.manualAddRemark || 'No Remark'})</span></p>` : ''}
+                    ${entry.manualSub ? `<p class="text-rose-400 font-mono">[-] Deducted ₹${entry.manualSub} <span class="text-slate-400 italic">(${entry.manualSubRemark || 'No Remark'})</span></p>` : ''}
+                </div>`;
+            }
+
+            document.getElementById('detail-modal-body').innerHTML = bodyHtml;
+            document.getElementById('detail-modal').classList.remove('hidden');
+        }
+
+        function stepNote(value, delta) {
+            const input = document.getElementById(`note-${value}`);
+            let current = parseInt(input.value) || 0;
+            current += delta;
+            input.value = current >= 0 ? current : '';
+            calculateTotal();
+        }
+
+        function saveTx(type) {
+            if (currentGrandTotal === 0) {
+                alert("Please add data before saving!");
+                return;
+            }
+
+            const breakDownData = {};
+            notes.forEach(v => { breakDownData[v] = parseInt(document.getElementById(`note-${v}`).value) || 0; });
+            const rawDt = document.getElementById('live-datetime').innerText;
+
+            const txRecord = {
+                id: "tx_" + Date.now(),
+                timestamp: rawDt,
+                type: type,
+                amount: currentGrandTotal,
+                netSale: currentNetSale,
+                floatCash: parseInt(document.getElementById('float-amount').value) || 0,
+                notes: document.getElementById('total-notes-count').innerText,
+                manualAdd: parseInt(document.getElementById('manual-add').value) || 0,
+                manualSub: parseInt(document.getElementById('manual-sub').value) || 0,
+                manualAddRemark: manualAddRemark,
+                manualSubRemark: manualSubRemark,
+                breakdown: breakDownData
+            };
+
+            let storageData = localStorage.getItem('hopweb_cash_app');
+            let historyArray = storageData ? JSON.parse(storageData) : [];
+            historyArray.unshift(txRecord);
+
+            localStorage.setItem('hopweb_cash_app', JSON.stringify(historyArray));
+            alert(`Saved ${type} entry successfully!`);
+            clearAllInputs();
+        }
+
+        function renderLogs() {
+            const container = document.getElementById('logs-container');
+            let storageData = localStorage.getItem('hopweb_cash_app');
+            let historyArray = storageData ? JSON.parse(storageData) : [];
+
+            if(historyArray.length === 0) {
+                container.innerHTML = `<div class="text-center py-12 text-slate-500 font-medium text-sm">No transactions logged yet.</div>`;
+                return;
+            }
+
+            container.innerHTML = historyArray.map(item => `
+                <div class="bg-slate-900 border ${item.type === 'IN' ? 'border-emerald-500/20' : 'border-rose-500/20'} p-4 rounded-xl shadow-md relative select-none">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <span class="text-xs font-bold px-2 py-0.5 rounded ${item.type === 'IN' ? 'bg-emerald-950 text-emerald-400' : 'bg-rose-950 text-rose-400'}">${item.type}</span>
+                            <p class="text-[10px] text-slate-500 mt-2 font-medium">${item.timestamp}</p>
+                            ${item.floatCash ? `<p class="text-[9px] text-amber-400/80 mt-1">Float Deducted: ₹${item.floatCash.toLocaleString()}</p>` : ''}
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <div class="text-right">
+                                <p class="text-base font-black text-emerald-400">Net: ₹${(item.netSale || item.amount).toLocaleString()}</p>
+                                <p class="text-xs text-slate-500 font-bold">Gross: ₹${item.amount.toLocaleString()}</p>
+                            </div>
+                            
+                            <div class="relative">
+                                <button onclick="toggleLogDropdown(event, '${item.id}')" class="text-slate-400 hover:text-slate-200 text-lg p-1 focus:outline-none font-bold">⋮</button>
+                                <div id="dropdown-${item.id}" class="log-dropdown hidden absolute right-0 mt-1 w-36 bg-slate-950 border border-slate-800 rounded-xl shadow-2xl z-40 text-xs">
+                                    <button onclick="executeShowDetails('${item.id}')" class="w-full text-left px-3 py-2.5 font-semibold text-slate-200 hover:bg-slate-900 rounded-t-xl">🔍 View Details</button>
+                                    <button onclick="executeDeleteLog('${item.id}')" class="w-full text-left px-3 py-2.5 font-semibold text-rose-400 hover:bg-slate-900 rounded-b-xl border-t border-slate-900">🗑️ Delete</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        const targetedFields = ['tally-amount', 'float-amount', 'note-500', 'note-200', 'note-100', 'note-50', 'note-20', 'note-10', 'note-5', 'note-2', 'note-1'];
+        targetedFields.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.addEventListener('focus', () => {
+                    setTimeout(() => { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 300);
+                });
+            }
+        });
+    </script>
+</body>
+</html>
